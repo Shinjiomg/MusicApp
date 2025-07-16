@@ -132,11 +132,11 @@ import Layout from '../layouts/Layout.astro';
       </div>
     </div>
     
-    <!-- Área de resultados de búsqueda -->
-    <div id="search-results" class="h-full overflow-y-auto px-6 py-4 hidden">
+    <!-- Área de resultados de búsqueda - Estilo Spotify -->
+    <div id="search-results" class="h-full overflow-y-auto hidden">
       <div class="w-full">
-        <!-- Filtros de búsqueda - Sticky -->
-        <div class="sticky top-0 z-10 bg-black/95 backdrop-blur-sm border-b border-white/10 mb-6 -mx-6 px-6 py-4">
+        <!-- Filtros de búsqueda - Estilo Spotify -->
+        <div class="sticky top-0 z-10 bg-black/95 backdrop-blur-sm border-b border-white/10 px-6 py-4">
           <div class="flex flex-wrap gap-2">
             {[
               { id: 'all', label: 'Todo' },
@@ -147,7 +147,7 @@ import Layout from '../layouts/Layout.astro';
               <button
                 type="button"
                 data-filter={filter.id}
-                class={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer ${
+                class={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 cursor-pointer ${
                   filter.id === 'all'
                     ? 'bg-white text-black shadow-lg'
                     : 'bg-gray-800/50 text-gray-300 hover:bg-gray-700/50 hover:text-white'
@@ -159,36 +159,66 @@ import Layout from '../layouts/Layout.astro';
           </div>
         </div>
 
-        <!-- Resultado más relevante - Sticky -->
-        <div id="top-result" class="sticky top-16 z-10 bg-black/95 backdrop-blur-sm border-b border-white/10 mb-8 -mx-6 px-6 py-4"></div>
-
-        <!-- Resultados por categorías -->
-        <div class="space-y-8">
-          <!-- Canciones -->
-          <div id="tracks-section" class="hidden">
-            <div class="flex items-center justify-between mb-6">
-              <h2 class="text-2xl font-bold text-white">Canciones</h2>
-              <button class="text-white hover:text-gray-300 text-sm font-medium cursor-pointer">Mostrar todo</button>
+        <!-- Layout dinámico según el filtro -->
+        <div id="search-layout" class="px-6 py-4">
+          <!-- Layout de 2 columnas para filtro "Todo" -->
+          <div id="two-column-layout" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Columna izquierda: Resultado más relevante -->
+            <div class="space-y-6">
+              <!-- Resultado más relevante - Estilo exacto de la imagen -->
+              <div id="top-result">
+                <h2 class="text-2xl font-bold text-white mb-4">Resultado más relevante</h2>
+                <div id="top-result-content" class="bg-gray-800/40 rounded-xl p-4 hover:bg-gray-800/60 transition-all duration-200 cursor-pointer">
+                  <!-- Contenido dinámico -->
+                </div>
+              </div>
             </div>
-            <div id="tracks-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6"></div>
+
+            <!-- Columna derecha: Solo lista de canciones (sticky con scroll independiente) -->
+            <div>
+              <!-- Canciones -->
+              <div id="tracks-section" class="hidden sticky top-20 h-[calc(100vh-10rem)] flex flex-col">
+                <div class="flex items-center justify-between flex-shrink-0">
+                  <h2 class="text-2xl font-bold text-white">Canciones</h2>
+                  <button class="text-white hover:text-gray-300 text-sm font-medium cursor-pointer">Mostrar todo</button>
+                </div>
+                <div id="tracks-list" class="space-y-3 flex-1">
+                  <!-- Lista de canciones estilo exacto de la imagen -->
+                </div>
+              </div>
+            </div>
           </div>
 
-          <!-- Álbumes -->
-          <div id="albums-section" class="hidden">
-            <div class="flex items-center justify-between mb-6">
-              <h2 class="text-2xl font-bold text-white">Álbumes</h2>
-              <button class="text-white hover:text-gray-300 text-sm font-medium cursor-pointer">Mostrar todo</button>
+          <!-- Layout de ancho completo para filtros específicos -->
+          <div id="full-width-layout" class="hidden">
+            <!-- Álbumes -->
+            <div id="albums-section-full" class="hidden">
+              <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-white">Álbumes</h2>
+                <button class="text-white hover:text-gray-300 text-sm font-medium cursor-pointer">Mostrar todo</button>
+              </div>
+              <div id="albums-grid-full" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-6"></div>
             </div>
-            <div id="albums-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6"></div>
-          </div>
 
-          <!-- Artistas -->
-          <div id="artists-section" class="hidden">
-            <div class="flex items-center justify-between mb-6">
-              <h2 class="text-2xl font-bold text-white">Artistas</h2>
-              <button class="text-white hover:text-gray-300 text-sm font-medium cursor-pointer">Mostrar todo</button>
+            <!-- Artistas -->
+            <div id="artists-section-full" class="hidden">
+              <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-white">Artistas</h2>
+                <button class="text-white hover:text-gray-300 text-sm font-medium cursor-pointer">Mostrar todo</button>
+              </div>
+              <div id="artists-grid-full" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-6"></div>
             </div>
-            <div id="artists-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6"></div>
+
+            <!-- Canciones -->
+            <div id="tracks-section-full" class="hidden">
+              <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-white">Canciones</h2>
+                <button class="text-white hover:text-gray-300 text-sm font-medium cursor-pointer">Mostrar todo</button>
+              </div>
+              <div id="tracks-list-full" class="space-y-3">
+                <!-- Lista de canciones de ancho completo -->
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -404,17 +434,58 @@ import Layout from '../layouts/Layout.astro';
     return gradients[Math.abs(hash) % gradients.length];
   }
 
-  // Función para mostrar resultados de búsqueda
+  // Función para mostrar resultados de búsqueda - Estilo Spotify
   function showSearchResults(results: any) {
     currentSearchResults = results;
     welcomeContent?.classList.add('hidden');
     searchResults?.classList.remove('hidden');
     
-    // Limpiar resultados anteriores
-    topResult!.innerHTML = '';
-    tracksGrid!.innerHTML = '';
-    albumsGrid!.innerHTML = '';
-    artistsGrid!.innerHTML = '';
+    // Elementos del layout de 2 columnas
+    const topResultContent = document.getElementById('top-result-content');
+    const tracksList = document.getElementById('tracks-list');
+    const twoColumnLayout = document.getElementById('two-column-layout');
+    
+    // Elementos del layout de ancho completo
+    const albumsGridFull = document.getElementById('albums-grid-full');
+    const artistsGridFull = document.getElementById('artists-grid-full');
+    const tracksListFull = document.getElementById('tracks-list-full');
+    const albumsSectionFull = document.getElementById('albums-section-full');
+    const artistsSectionFull = document.getElementById('artists-section-full');
+    const tracksSectionFull = document.getElementById('tracks-section-full');
+    const fullWidthLayout = document.getElementById('full-width-layout');
+    
+    // Limpiar todos los contenedores
+    if (topResultContent) topResultContent.innerHTML = '';
+    if (tracksList) tracksList.innerHTML = '';
+    if (albumsGridFull) albumsGridFull.innerHTML = '';
+    if (artistsGridFull) artistsGridFull.innerHTML = '';
+    if (tracksListFull) tracksListFull.innerHTML = '';
+    
+    // Limpiar secciones dinámicas del sidebar
+    const sidebarAlbums = document.getElementById('albums-grid-sidebar');
+    const sidebarArtists = document.getElementById('artists-grid-sidebar');
+    if (sidebarAlbums) {
+      const albumsSection = sidebarAlbums.closest('div[class*="mt-8"]');
+      if (albumsSection) albumsSection.remove();
+    }
+    if (sidebarArtists) {
+      const artistsSection = sidebarArtists.closest('div[class*="mt-8"]');
+      if (artistsSection) artistsSection.remove();
+    }
+    
+    // Ocultar todas las secciones
+    const sections = ['tracks-section', 'albums-section', 'artists-section'];
+    sections.forEach(sectionId => {
+      const section = document.getElementById(sectionId);
+      if (section) section.classList.add('hidden');
+    });
+    
+    // Ocultar todas las secciones de ancho completo
+    const fullSections = ['albums-section-full', 'artists-section-full', 'tracks-section-full'];
+    fullSections.forEach(sectionId => {
+      const section = document.getElementById(sectionId);
+      if (section) section.classList.add('hidden');
+    });
     
     // Ocultar todas las secciones
     tracksSection?.classList.add('hidden');
@@ -424,188 +495,132 @@ import Layout from '../layouts/Layout.astro';
     if (!results) return;
 
     // Mostrar resultado más relevante según el filtro actual
-    if (currentFilter === 'all' || currentFilter === 'tracks') {
+    // Determinar qué layout usar según el filtro
+    if (currentFilter === 'all') {
+      // Layout de 2 columnas para "Todo"
+      twoColumnLayout?.classList.remove('hidden');
+      fullWidthLayout?.classList.add('hidden');
+      
+      // Renderizar resultado más relevante
+      renderTopResult(results);
+      
+      // Mostrar canciones en la columna derecha
       if (results.tracks?.items?.length > 0) {
-        const track = results.tracks.items[0];
-        const imageUrl = track.album?.images?.[0]?.url || '';
-        const gradientClass = getGradientClass(track.name);
+        renderTracksList(results.tracks.items.slice(0, 9));
+      }
+      
+      // Mostrar álbumes y artistas en la columna izquierda (debajo del resultado más relevante)
+      const topResult = document.getElementById('top-result');
+      
+      // Agregar sección de álbumes si hay resultados
+      if (results.albums?.items?.length > 0) {
+        const albumsSection = document.createElement('div');
+        albumsSection.className = 'mt-8';
+        albumsSection.innerHTML = `
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-2xl font-bold text-white">Álbumes</h2>
+            <button class="text-white hover:text-gray-300 text-sm font-medium cursor-pointer">Mostrar todo</button>
+          </div>
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-4" id="albums-grid-sidebar"></div>
+        `;
+        topResult?.parentNode?.insertBefore(albumsSection, topResult.nextSibling);
         
-        topResult!.innerHTML = `
-          <div class="bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl p-6 shadow-xl">
-            <div class="flex items-center space-x-4">
-              <div class="w-24 h-24 ${gradientClass} rounded-lg flex items-center justify-center relative overflow-hidden">
+        // Renderizar álbumes
+        const albumsGridSidebar = document.getElementById('albums-grid-sidebar');
+        if (albumsGridSidebar) {
+          results.albums.items.slice(0, 6).forEach((album: any) => {
+            const albumElement = document.createElement('div');
+            albumElement.className = 'group cursor-pointer';
+            
+            const imageUrl = album.images?.[0]?.url || '';
+            const gradientClass = getGradientClass(album.name);
+            
+            albumElement.innerHTML = `
+              <div class="aspect-square ${gradientClass} rounded-lg mb-3 flex items-center justify-center relative overflow-hidden group-hover:scale-105 transition-all duration-200">
                 ${imageUrl ? `
-                  <img src="${imageUrl}" alt="${track.name}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                  <svg class="w-12 h-12 text-white absolute inset-0 m-auto" fill="currentColor" viewBox="0 0 24 24">
+                  <img src="${imageUrl}" alt="${album.name}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                  <div class="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-all duration-200"></div>
+                  <svg class="w-8 h-8 text-white relative z-10 opacity-0 group-hover:opacity-100 transition-all duration-200" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M8 5v14l11-7z"/>
                   </svg>
                 ` : `
-                  <svg class="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M8 5v14l11-7z"/>
                   </svg>
                 `}
               </div>
-              <div>
-                <h3 class="text-white font-bold text-xl">${track.name}</h3>
-                <p class="text-white/80">${track.artists.map((a: any) => a.name).join(', ')}</p>
-                <p class="text-white/60 text-sm">${track.album.name}</p>
-              </div>
-            </div>
-          </div>
-        `;
+              <h3 class="text-white font-semibold text-sm truncate mb-1">${album.name}</h3>
+              <p class="text-white/70 text-xs truncate">${album.artists?.map((a: any) => a.name).join(', ')}</p>
+            `;
+            albumsGridSidebar.appendChild(albumElement);
+          });
+        }
       }
-    } else if (currentFilter === 'albums' && results.albums?.items?.length > 0) {
-      const album = results.albums.items[0];
-      const imageUrl = album.images?.[0]?.url || '';
-      const gradientClass = getGradientClass(album.name);
       
-      topResult!.innerHTML = `
-        <div class="bg-gradient-to-r from-blue-600 to-cyan-600 rounded-xl p-6 shadow-xl">
-          <div class="flex items-center space-x-4">
-            <div class="w-24 h-24 ${gradientClass} rounded-lg flex items-center justify-center relative overflow-hidden">
-              ${imageUrl ? `
-                <img src="${imageUrl}" alt="${album.name}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                <svg class="w-12 h-12 text-white absolute inset-0 m-auto" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                </svg>
-              ` : `
-                <svg class="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                </svg>
-              `}
-            </div>
-            <div>
-              <h3 class="text-white font-bold text-xl">${album.name}</h3>
-              <p class="text-white/80">${album.artists.map((a: any) => a.name).join(', ')}</p>
-              <p class="text-white/60 text-sm">Álbum</p>
-            </div>
-          </div>
-        </div>
-      `;
-    } else if (currentFilter === 'artists' && results.artists?.items?.length > 0) {
-      const artist = results.artists.items[0];
-      const imageUrl = artist.images?.[0]?.url || '';
-      const gradientClass = getGradientClass(artist.name);
-      
-      topResult!.innerHTML = `
-        <div class="bg-gradient-to-r from-green-600 to-emerald-600 rounded-xl p-6 shadow-xl">
-          <div class="flex items-center space-x-4">
-            <div class="w-24 h-24 ${gradientClass} rounded-full flex items-center justify-center relative overflow-hidden">
-              ${imageUrl ? `
-                <img src="${imageUrl}" alt="${artist.name}" class="w-full h-full object-cover rounded-full" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                <svg class="w-12 h-12 text-white absolute inset-0 m-auto" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                </svg>
-              ` : `
-                <svg class="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                </svg>
-              `}
-            </div>
-            <div>
-              <h3 class="text-white font-bold text-xl">${artist.name}</h3>
-              <p class="text-white/80">${artist.followers?.total ? `${artist.followers.total.toLocaleString()} seguidores` : 'Artista'}</p>
-              <p class="text-white/60 text-sm">Artista</p>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
-    // Mostrar secciones según el filtro actual
-    if (currentFilter === 'all' || currentFilter === 'tracks') {
-      if (results.tracks?.items?.length > 0) {
-        tracksSection?.classList.remove('hidden');
-        results.tracks.items.slice(0, 10).forEach((track: any) => {
-          const trackElement = document.createElement('div');
-          trackElement.className = 'bg-white/10 backdrop-blur-sm rounded-xl p-4 hover:bg-white/20 transition-all duration-200 cursor-pointer border border-white/10 group';
-          
-          const imageUrl = track.album?.images?.[0]?.url || '';
-          const gradientClass = getGradientClass(track.name);
-          
-          trackElement.innerHTML = `
-            <div class="aspect-square ${gradientClass} rounded-lg mb-4 flex items-center justify-center relative overflow-hidden">
-              ${imageUrl ? `
-                <img src="${imageUrl}" alt="${track.name}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                <div class="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-all duration-200"></div>
-                <svg class="w-8 h-8 text-white relative z-10 opacity-0 group-hover:opacity-100 transition-all duration-200" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M8 5v14l11-7z"/>
-                </svg>
-              ` : `
-                <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M8 5v14l11-7z"/>
-                </svg>
-              `}
-            </div>
-            <h3 class="text-white font-semibold text-sm truncate">${track.name}</h3>
-            <p class="text-white/70 text-xs truncate">${track.artists.map((a: any) => a.name).join(', ')}</p>
-          `;
-          tracksGrid?.appendChild(trackElement);
-        });
-      }
-    }
-
-    if (currentFilter === 'all' || currentFilter === 'albums') {
-      if (results.albums?.items?.length > 0) {
-        albumsSection?.classList.remove('hidden');
-        results.albums.items.slice(0, 10).forEach((album: any) => {
-          const albumElement = document.createElement('div');
-          albumElement.className = 'bg-white/10 backdrop-blur-sm rounded-xl p-4 hover:bg-white/20 transition-all duration-200 cursor-pointer border border-white/10 group';
-          
-          const imageUrl = album.images?.[0]?.url || '';
-          const gradientClass = getGradientClass(album.name);
-          
-          albumElement.innerHTML = `
-            <div class="aspect-square ${gradientClass} rounded-lg mb-4 flex items-center justify-center relative overflow-hidden">
-              ${imageUrl ? `
-                <img src="${imageUrl}" alt="${album.name}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                <div class="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-all duration-200"></div>
-                <svg class="w-8 h-8 text-white relative z-10 opacity-0 group-hover:opacity-100 transition-all duration-200" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                </svg>
-              ` : `
-                <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                </svg>
-              `}
-            </div>
-            <h3 class="text-white font-semibold text-sm truncate">${album.name}</h3>
-            <p class="text-white/70 text-xs truncate">${album.artists.map((a: any) => a.name).join(', ')}</p>
-          `;
-          albumsGrid?.appendChild(albumElement);
-        });
-      }
-    }
-
-    if (currentFilter === 'all' || currentFilter === 'artists') {
+      // Agregar sección de artistas si hay resultados
       if (results.artists?.items?.length > 0) {
-        artistsSection?.classList.remove('hidden');
-        results.artists.items.slice(0, 10).forEach((artist: any) => {
-          const artistElement = document.createElement('div');
-          artistElement.className = 'bg-white/10 backdrop-blur-sm rounded-xl p-4 hover:bg-white/20 transition-all duration-200 cursor-pointer border border-white/10 group';
-          
-          const imageUrl = artist.images?.[0]?.url || '';
-          const gradientClass = getGradientClass(artist.name);
-          
-          artistElement.innerHTML = `
-            <div class="aspect-square ${gradientClass} rounded-lg mb-4 flex items-center justify-center relative overflow-hidden">
-              ${imageUrl ? `
-                <img src="${imageUrl}" alt="${artist.name}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                <div class="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-all duration-200"></div>
-                <svg class="w-8 h-8 text-white relative z-10 opacity-0 group-hover:opacity-100 transition-all duration-200" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                </svg>
-              ` : `
-                <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                </svg>
-              `}
-            </div>
-            <h3 class="text-white font-semibold text-sm truncate">${artist.name}</h3>
-            <p class="text-white/70 text-xs truncate">${artist.followers?.total ? `${artist.followers.total.toLocaleString()} seguidores` : 'Artista'}</p>
-          `;
-          artistsGrid?.appendChild(artistElement);
-        });
+        const artistsSection = document.createElement('div');
+        artistsSection.className = 'mt-8';
+        artistsSection.innerHTML = `
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-2xl font-bold text-white">Artistas</h2>
+            <button class="text-white hover:text-gray-300 text-sm font-medium cursor-pointer">Mostrar todo</button>
+          </div>
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-4" id="artists-grid-sidebar"></div>
+        `;
+        topResult?.parentNode?.insertBefore(artistsSection, topResult.nextSibling);
+        
+        // Renderizar artistas
+        const artistsGridSidebar = document.getElementById('artists-grid-sidebar');
+        if (artistsGridSidebar) {
+          results.artists.items.slice(0, 6).forEach((artist: any) => {
+            const artistElement = document.createElement('div');
+            artistElement.className = 'group cursor-pointer text-center';
+            
+            const imageUrl = artist.images?.[0]?.url || '';
+            const gradientClass = getGradientClass(artist.name);
+            
+            artistElement.innerHTML = `
+              <div class="w-20 h-20 ${gradientClass} rounded-full mb-3 flex items-center justify-center relative overflow-hidden mx-auto group-hover:scale-105 transition-all duration-200">
+                ${imageUrl ? `
+                  <img src="${imageUrl}" alt="${artist.name}" class="w-full h-full object-cover rounded-full" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                  <div class="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-all duration-200"></div>
+                  <svg class="w-6 h-6 text-white relative z-10 opacity-0 group-hover:opacity-100 transition-all duration-200" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z"/>
+                  </svg>
+                ` : `
+                  <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z"/>
+                  </svg>
+                `}
+              </div>
+              <h3 class="text-white font-semibold text-sm truncate mb-1">${artist.name}</h3>
+              <p class="text-white/70 text-xs">Artista</p>
+            `;
+            artistsGridSidebar.appendChild(artistElement);
+          });
+        }
+      }
+    } else {
+      // Layout de ancho completo para filtros específicos
+      twoColumnLayout?.classList.add('hidden');
+      fullWidthLayout?.classList.remove('hidden');
+      
+      if (currentFilter === 'tracks') {
+        if (results.tracks?.items?.length > 0) {
+          tracksSectionFull?.classList.remove('hidden');
+          renderTracksListFull(results.tracks.items.slice(0, 20));
+        }
+      } else if (currentFilter === 'albums') {
+        if (results.albums?.items?.length > 0) {
+          albumsSectionFull?.classList.remove('hidden');
+          renderAlbumsGridFull(results.albums.items.slice(0, 18));
+        }
+      } else if (currentFilter === 'artists') {
+        if (results.artists?.items?.length > 0) {
+          artistsSectionFull?.classList.remove('hidden');
+          renderArtistsGridFull(results.artists.items.slice(0, 18));
+        }
       }
     }
   }
@@ -615,6 +630,337 @@ import Layout from '../layouts/Layout.astro';
     currentSearchResults = null;
     welcomeContent?.classList.remove('hidden');
     searchResults?.classList.add('hidden');
+  }
+
+  // Función para calcular score de relevancia
+  function calculateRelevanceScore(item: any, type: string) {
+    let score = 0;
+    
+    // Factor base según el tipo
+    const typeWeights: Record<string, number> = {
+      'artist': 1.2,  // Los artistas suelen ser más relevantes en búsquedas generales
+      'album': 1.0,
+      'track': 0.8
+    };
+    
+    score += typeWeights[type] || 1.0;
+    
+    // Para artistas: considerar seguidores
+    if (type === 'artist' && item.followers?.total) {
+      const followers = item.followers.total;
+      if (followers > 1000000) score += 2.0;        // Más de 1M seguidores
+      else if (followers > 100000) score += 1.5;    // Más de 100K seguidores
+      else if (followers > 10000) score += 1.0;     // Más de 10K seguidores
+      else score += 0.5;                            // Menos de 10K seguidores
+    }
+    
+    // Para álbumes: considerar fecha de lanzamiento (más reciente = más relevante)
+    if (type === 'album' && item.release_date) {
+      const releaseYear = new Date(item.release_date).getFullYear();
+      const currentYear = new Date().getFullYear();
+      const yearsDiff = currentYear - releaseYear;
+      
+      if (yearsDiff <= 1) score += 1.5;      // Último año
+      else if (yearsDiff <= 3) score += 1.0; // Últimos 3 años
+      else if (yearsDiff <= 5) score += 0.5; // Últimos 5 años
+      else score += 0.2;                     // Más antiguo
+    }
+    
+    // Para canciones: considerar popularidad (si está disponible)
+    if (type === 'track' && item.popularity) {
+      if (item.popularity >= 80) score += 1.5;      // Muy popular
+      else if (item.popularity >= 60) score += 1.0; // Popular
+      else if (item.popularity >= 40) score += 0.5; // Moderadamente popular
+      else score += 0.2;                            // Poco popular
+    }
+    
+    // Bonus por ser el primer resultado de su categoría
+    score += 0.3;
+    
+    return score;
+  }
+
+  // Función para renderizar resultado más relevante - Estilo exacto de la imagen
+  function renderTopResult(results: any) {
+    const topResultContent = document.getElementById('top-result-content');
+    if (!topResultContent) return;
+
+    // Determinar el resultado más relevante según el filtro actual
+    let topItem = null;
+    let topType = '';
+
+    if (currentFilter === 'tracks' && results.tracks?.items?.length > 0) {
+      topItem = results.tracks.items[0];
+      topType = 'track';
+    } else if (currentFilter === 'albums' && results.albums?.items?.length > 0) {
+      topItem = results.albums.items[0];
+      topType = 'album';
+    } else if (currentFilter === 'artists' && results.artists?.items?.length > 0) {
+      topItem = results.artists.items[0];
+      topType = 'artist';
+    } else if (currentFilter === 'all') {
+      // Para "Todo", usar lógica inteligente para determinar el más relevante
+      const candidates = [];
+      
+      // Agregar candidatos de cada tipo
+      if (results.tracks?.items?.length > 0) {
+        candidates.push({
+          item: results.tracks.items[0],
+          type: 'track',
+          score: calculateRelevanceScore(results.tracks.items[0], 'track')
+        });
+      }
+      
+      if (results.albums?.items?.length > 0) {
+        candidates.push({
+          item: results.albums.items[0],
+          type: 'album',
+          score: calculateRelevanceScore(results.albums.items[0], 'album')
+        });
+      }
+      
+      if (results.artists?.items?.length > 0) {
+        candidates.push({
+          item: results.artists.items[0],
+          type: 'artist',
+          score: calculateRelevanceScore(results.artists.items[0], 'artist')
+        });
+      }
+      
+      // Seleccionar el candidato con mayor score
+      if (candidates.length > 0) {
+        candidates.sort((a, b) => b.score - a.score);
+        topItem = candidates[0].item;
+        topType = candidates[0].type;
+      }
+    }
+
+    if (!topItem) return;
+
+    const imageUrl = topItem.images?.[0]?.url || topItem.album?.images?.[0]?.url || '';
+    const gradientClass = getGradientClass(topItem.name);
+    
+    let content = '';
+    
+    if (topType === 'track') {
+      content = `
+        <div class="flex flex-col space-y-3">
+          <div class="w-32 h-32 ${gradientClass} rounded-lg flex items-center justify-center relative overflow-hidden mx-auto">
+            ${imageUrl ? `
+              <img src="${imageUrl}" alt="${topItem.name}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+              <svg class="w-12 h-12 text-white absolute inset-0 m-auto" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z"/>
+              </svg>
+            ` : `
+              <svg class="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z"/>
+              </svg>
+            `}
+          </div>
+          <div class="text-center">
+            <h3 class="text-white font-bold text-xl mb-1">${topItem.name}</h3>
+            <p class="text-white/70 text-sm">Canción • ${topItem.artists?.map((a: any) => a.name).join(', ')}</p>
+          </div>
+        </div>
+      `;
+    } else if (topType === 'album') {
+      content = `
+        <div class="flex flex-col space-y-3">
+          <div class="w-32 h-32 ${gradientClass} rounded-lg flex items-center justify-center relative overflow-hidden mx-auto">
+            ${imageUrl ? `
+              <img src="${imageUrl}" alt="${topItem.name}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+              <svg class="w-12 h-12 text-white absolute inset-0 m-auto" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+              </svg>
+            ` : `
+              <svg class="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+              </svg>
+            `}
+          </div>
+          <div class="text-center">
+            <h3 class="text-white font-bold text-xl mb-1">${topItem.name}</h3>
+            <p class="text-white/70 text-sm">Álbum • ${topItem.artists?.map((a: any) => a.name).join(', ')}</p>
+          </div>
+        </div>
+      `;
+    } else if (topType === 'artist') {
+      content = `
+        <div class="flex flex-col space-y-3">
+          <div class="w-32 h-32 ${gradientClass} rounded-full flex items-center justify-center relative overflow-hidden mx-auto">
+            ${imageUrl ? `
+              <img src="${imageUrl}" alt="${topItem.name}" class="w-full h-full object-cover rounded-full" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+              <svg class="w-12 h-12 text-white absolute inset-0 m-auto" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+              </svg>
+            ` : `
+              <svg class="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+              </svg>
+            `}
+          </div>
+          <div class="text-center">
+            <h3 class="text-white font-bold text-xl mb-1">${topItem.name}</h3>
+            <p class="text-white/70 text-sm">Artista • ${topItem.followers?.total ? `${topItem.followers.total.toLocaleString()} seguidores` : 'Sin información'}</p>
+          </div>
+        </div>
+      `;
+    }
+
+    topResultContent.innerHTML = content;
+  }
+
+  // Función para renderizar lista de canciones - Estilo exacto de la imagen
+  function renderTracksList(tracks: any[]) {
+    const tracksList = document.getElementById('tracks-list');
+    const tracksSection = document.getElementById('tracks-section');
+    if (!tracksList || !tracksSection) return;
+
+    tracksSection.classList.remove('hidden');
+    
+    tracks.forEach((track, index) => {
+      const trackElement = document.createElement('div');
+      trackElement.className = 'flex items-center space-x-4 p-3 rounded-lg hover:bg-white/10 transition-all duration-200 cursor-pointer group';
+      
+      const imageUrl = track.album?.images?.[0]?.url || '';
+      const gradientClass = getGradientClass(track.name);
+      
+      // La primera canción se destaca con color verde como en la imagen
+      const isFirstTrack = index === 0;
+      const titleColor = isFirstTrack ? 'text-green-400' : 'text-white';
+      
+      trackElement.innerHTML = `
+        <div class="w-12 h-12 ${gradientClass} rounded flex items-center justify-center relative overflow-hidden">
+          ${imageUrl ? `
+            <img src="${imageUrl}" alt="${track.name}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+            <svg class="w-4 h-4 text-white absolute inset-0 m-auto opacity-0 group-hover:opacity-100 transition-all duration-200" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+          ` : `
+            <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+          `}
+        </div>
+        <div class="flex-1 min-w-0">
+          <h4 class="${titleColor} font-medium truncate">${track.name}</h4>
+          <p class="text-white/70 text-sm truncate">${track.artists?.map((a: any) => a.name).join(', ')}</p>
+        </div>
+        <div class="text-white text-sm">${track.duration_ms ? formatDuration(track.duration_ms) : ''}</div>
+      `;
+      
+      tracksList.appendChild(trackElement);
+    });
+  }
+
+  // Función para formatear duración
+  function formatDuration(ms: number) {
+    const minutes = Math.floor(ms / 60000);
+    const seconds = Math.floor((ms % 60000) / 1000);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  }
+
+  // Función para renderizar lista de canciones de ancho completo
+  function renderTracksListFull(tracks: any[]) {
+    const tracksListFull = document.getElementById('tracks-list-full');
+    if (!tracksListFull) return;
+    
+    tracks.forEach((track, index) => {
+      const trackElement = document.createElement('div');
+      trackElement.className = 'flex items-center space-x-4 p-3 rounded-lg hover:bg-white/10 transition-all duration-200 cursor-pointer group';
+      
+      const imageUrl = track.album?.images?.[0]?.url || '';
+      const gradientClass = getGradientClass(track.name);
+      
+      trackElement.innerHTML = `
+        <div class="w-12 h-12 ${gradientClass} rounded flex items-center justify-center relative overflow-hidden">
+          ${imageUrl ? `
+            <img src="${imageUrl}" alt="${track.name}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+            <svg class="w-4 h-4 text-white absolute inset-0 m-auto opacity-0 group-hover:opacity-100 transition-all duration-200" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+          ` : `
+            <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+          `}
+        </div>
+        <div class="flex-1 min-w-0">
+          <h4 class="text-white font-medium truncate">${track.name}</h4>
+          <p class="text-white/70 text-sm truncate">${track.artists?.map((a: any) => a.name).join(', ')}</p>
+        </div>
+        <div class="text-white text-sm">${track.duration_ms ? formatDuration(track.duration_ms) : ''}</div>
+      `;
+      
+      tracksListFull.appendChild(trackElement);
+    });
+  }
+
+  // Función para renderizar grid de álbumes de ancho completo
+  function renderAlbumsGridFull(albums: any[]) {
+    const albumsGridFull = document.getElementById('albums-grid-full');
+    if (!albumsGridFull) return;
+    
+    albums.forEach((album: any) => {
+      const albumElement = document.createElement('div');
+      albumElement.className = 'group cursor-pointer';
+      
+      const imageUrl = album.images?.[0]?.url || '';
+      const gradientClass = getGradientClass(album.name);
+      
+      albumElement.innerHTML = `
+        <div class="aspect-square ${gradientClass} rounded-lg mb-3 flex items-center justify-center relative overflow-hidden group-hover:scale-105 transition-all duration-200">
+          ${imageUrl ? `
+            <img src="${imageUrl}" alt="${album.name}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+            <div class="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-all duration-200"></div>
+            <svg class="w-12 h-12 text-white relative z-10 opacity-0 group-hover:opacity-100 transition-all duration-200" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+          ` : `
+            <svg class="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+          `}
+        </div>
+        <h3 class="text-white font-semibold text-sm truncate mb-1">${album.name}</h3>
+        <p class="text-white/70 text-xs truncate">${album.artists?.map((a: any) => a.name).join(', ')}</p>
+        <p class="text-white/50 text-xs">${album.release_date ? new Date(album.release_date).getFullYear() : ''}</p>
+      `;
+      albumsGridFull.appendChild(albumElement);
+    });
+  }
+
+  // Función para renderizar grid de artistas de ancho completo
+  function renderArtistsGridFull(artists: any[]) {
+    const artistsGridFull = document.getElementById('artists-grid-full');
+    if (!artistsGridFull) return;
+    
+    artists.forEach((artist: any) => {
+      const artistElement = document.createElement('div');
+      artistElement.className = 'group cursor-pointer text-center';
+      
+      const imageUrl = artist.images?.[0]?.url || '';
+      const gradientClass = getGradientClass(artist.name);
+      
+      artistElement.innerHTML = `
+        <div class="w-32 h-32 ${gradientClass} rounded-full mb-3 flex items-center justify-center relative overflow-hidden mx-auto group-hover:scale-105 transition-all duration-200">
+          ${imageUrl ? `
+            <img src="${imageUrl}" alt="${artist.name}" class="w-full h-full object-cover rounded-full" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+            <div class="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-all duration-200"></div>
+            <svg class="w-8 h-8 text-white relative z-10 opacity-0 group-hover:opacity-100 transition-all duration-200" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+          ` : `
+            <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+          `}
+        </div>
+        <h3 class="text-white font-semibold text-sm truncate mb-1">${artist.name}</h3>
+        <p class="text-white/70 text-xs">Artista</p>
+      `;
+      artistsGridFull.appendChild(artistElement);
+    });
   }
 
   // Función para cambiar filtro

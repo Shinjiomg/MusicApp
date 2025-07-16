@@ -84,4 +84,41 @@ export interface ApiResponse<T = any> {
   data?: T;
   error?: string;
   message?: string;
+}
+
+export interface UserPlaylist {
+  id: number;
+  user_id: number;
+  name: string;
+  description?: string;
+  is_public: boolean;
+  created_at: string;
+  updated_at: string;
+  tracks: PlaylistTrack[];
+}
+
+export interface PlaylistTrack {
+  id: number;
+  playlist_id: number;
+  spotify_track_id: string;
+  track_name: string;
+  artist_name: string;
+  album_name: string;
+  image_url?: string;
+  added_at: string;
+  position: number;
+}
+
+export interface CreatePlaylistRequest {
+  name: string;
+  description?: string;
+  is_public?: boolean;
+}
+
+export interface AddTrackToPlaylistRequest {
+  spotify_track_id: string;
+  track_name: string;
+  artist_name: string;
+  album_name: string;
+  image_url?: string;
 } 
