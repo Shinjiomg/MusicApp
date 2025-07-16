@@ -1,0 +1,130 @@
+---
+import Layout from '../layouts/Layout.astro';
+import SearchForm from '../components/SearchForm';
+---
+
+<Layout title="Buscar música - MusicApp">
+  <div class="text-center mb-8">
+    <h1 class="text-4xl font-bold bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent mb-4">
+      Buscar música
+    </h1>
+    <p class="text-gray-300 text-lg">
+      Encuentra tu música favorita en Spotify
+    </p>
+  </div>
+
+  <SearchForm client:only="solid" />
+
+  <div id="search-results" class="mt-8">
+    <!-- Los resultados se mostrarán aquí dinámicamente -->
+  </div>
+</Layout>
+
+<script>
+  // Script para manejar los resultados de búsqueda
+  window.addEventListener('searchResults', (event: any) => {
+    const results = event.detail;
+    const container = document.getElementById('search-results');
+    
+    if (!container) return;
+
+    if (!results || Object.keys(results).length === 0) {
+      container.innerHTML = '<p class="text-center text-gray-400 text-lg">No se encontraron resultados</p>';
+      return;
+    }
+
+    let html = '<div class="space-y-8">';
+
+    // Mostrar tracks
+    if (results.tracks?.items?.length > 0) {
+      html += '<div><h2 class="text-2xl font-bold text-white mb-6">Canciones</h2>';
+      html += '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">';
+      
+      results.tracks.items.forEach((track: any) => {
+        html += `
+          <div class="bg-gray-800 rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:scale-105 border border-gray-700">
+            <div class="aspect-square bg-gray-700 relative overflow-hidden">
+              ${track.album.images[0] ? 
+                `<img src="${track.album.images[0].url}" alt="${track.name}" class="w-full h-full object-cover transition-transform duration-300 hover:scale-110">` : 
+                '<div class="w-full h-full flex items-center justify-center text-gray-400"><svg class="w-16 h-16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></div>'
+              }
+              <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
+            </div>
+            <div class="p-6">
+              <h3 class="font-semibold text-white mb-2 truncate text-lg">${track.name}</h3>
+              <p class="text-sm text-gray-300 mb-2">${track.artists.map((a: any) => a.name).join(', ')}</p>
+              <p class="text-xs text-gray-400 mb-4">${track.album.name}</p>
+              ${track.preview_url ? 
+                `<audio controls class="w-full" preload="none" class="w-full">
+                   <source src="${track.preview_url}" type="audio/mpeg">
+                 </audio>` : 
+                '<p class="text-xs text-gray-500">Sin preview disponible</p>'
+              }
+            </div>
+          </div>
+        `;
+      });
+      
+      html += '</div></div>';
+    }
+
+    // Mostrar álbumes
+    if (results.albums?.items?.length > 0) {
+      html += '<div><h2 class="text-2xl font-bold text-white mb-6">Álbumes</h2>';
+      html += '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">';
+      
+      results.albums.items.forEach((album: any) => {
+        html += `
+          <div class="bg-gray-800 rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:scale-105 border border-gray-700">
+            <div class="aspect-square bg-gray-700 relative overflow-hidden">
+              ${album.images[0] ? 
+                `<img src="${album.images[0].url}" alt="${album.name}" class="w-full h-full object-cover transition-transform duration-300 hover:scale-110">` : 
+                '<div class="w-full h-full flex items-center justify-center text-gray-400"><svg class="w-16 h-16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></div>'
+              }
+              <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
+            </div>
+            <div class="p-6">
+              <h3 class="font-semibold text-white mb-2 truncate text-lg">${album.name}</h3>
+              <p class="text-sm text-gray-300 mb-2">${album.artists.map((a: any) => a.name).join(', ')}</p>
+              <p class="text-xs text-gray-400">${album.release_date}</p>
+            </div>
+          </div>
+        `;
+      });
+      
+      html += '</div></div>';
+    }
+
+    // Mostrar artistas
+    if (results.artists?.items?.length > 0) {
+      html += '<div><h2 class="text-2xl font-bold text-white mb-6">Artistas</h2>';
+      html += '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">';
+      
+      results.artists.items.forEach((artist: any) => {
+        html += `
+          <div class="bg-gray-800 rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:scale-105 border border-gray-700">
+            <div class="aspect-square bg-gray-700 relative overflow-hidden">
+              ${artist.images[0] ? 
+                `<img src="${artist.images[0].url}" alt="${artist.name}" class="w-full h-full object-cover transition-transform duration-300 hover:scale-110">` : 
+                '<div class="w-full h-full flex items-center justify-center text-gray-400"><svg class="w-16 h-16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></div>'
+              }
+              <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
+            </div>
+            <div class="p-6">
+              <h3 class="font-semibold text-white mb-2 truncate text-lg">${artist.name}</h3>
+              ${artist.followers ? 
+                `<p class="text-sm text-gray-300">${artist.followers.total.toLocaleString()} seguidores</p>` : 
+                ''
+              }
+            </div>
+          </div>
+        `;
+      });
+      
+      html += '</div></div>';
+    }
+
+    html += '</div>';
+    container.innerHTML = html;
+  });
+</script> 
