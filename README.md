@@ -138,12 +138,30 @@ Este proyecto fue desarrollado utilizando **Cursor** como herramienta de desarro
 
 ## 🚀 Despliegue
 
-Para desplegar en producción:
+### **Despliegue en Cloudflare Pages**
 
-1. Configurar variables de entorno de producción
-2. Ejecutar `npm run build`
-3. Configurar el servidor para servir la aplicación
-4. Asegurar que las credenciales de Spotify estén configuradas
+El proyecto está configurado para desplegarse en Cloudflare Pages:
+
+1. **Configurar variables de entorno en Cloudflare Pages**:
+   - Ve a tu proyecto en Cloudflare Pages
+   - Settings → Environment variables
+   - Agrega las variables necesarias (SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, etc.)
+
+2. **Configurar Spotify API**:
+   - Agrega `https://castor-prueba-tecnica.pages.dev` a las URLs de redirección
+   - Mantén también `http://localhost:4321` para desarrollo local
+
+3. **Despliegue automático**:
+   - El proyecto se despliega automáticamente al hacer push a la rama principal
+   - URL de producción: https://castor-prueba-tecnica.pages.dev
+
+### **Despliegue Local**
+
+Para desarrollo local:
+
+1. Configurar variables de entorno en archivo `.env`
+2. Ejecutar `npm run dev`
+3. La aplicación estará disponible en `http://localhost:4321`
 
 ---
 
