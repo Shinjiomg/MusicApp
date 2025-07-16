@@ -1,105 +1,676 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { spotifyService } from '../lib/spotify';
-
-// Obtener algunos tracks populares para mostrar en la página principal
-let topTracks: any[] = [];
-try {
-  topTracks = await spotifyService.getTopTracks(6);
-} catch (error) {
-  console.error('Error fetching top tracks:', error);
-}
 ---
 
-<Layout title="MusicApp - Descubre tu música favorita">
-  <div class="text-center mb-12">
-    <h1 class="text-5xl font-bold bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent mb-4">
-      Descubre tu música favorita
-    </h1>
-    <p class="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-      Explora millones de canciones, álbumes y artistas con Spotify. 
-      Tu música, tu estilo, tu experiencia.
-    </p>
-    <div class="flex justify-center space-x-4">
-      <a 
-        href="/search" 
-        class="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-8 py-4 rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-green-500/25 transform hover:scale-105"
-      >
-        Buscar música
-      </a>
-      <a 
-        href="/register" 
-        class="bg-gray-800 hover:bg-gray-700 text-white px-8 py-4 rounded-xl font-medium transition-all duration-200 border border-gray-700 hover:border-gray-600"
-      >
-        Registrarse
-      </a>
-    </div>
-  </div>
+<Layout title="MusicApp - Tu música, tu estilo">
+  <!-- Contenido principal - Pantalla completa -->
+  <div class="h-full bg-black overflow-hidden">
+    <!-- Estado inicial - Recomendaciones y búsqueda -->
+    <div id="welcome-content" class="h-full overflow-y-auto px-6 py-4">
+      <div class="w-full">
+        <!-- Hero Section -->
+        <div class="text-center mb-12 mt-12">
+          <h1 class="text-4xl md:text-6xl font-bold text-white mb-6">
+            ¿Qué quieres escuchar hoy?
+          </h1>
+          <p class="text-gray-300 text-lg md:text-xl max-w-3xl mx-auto">
+            Busca tu música favorita o descubre nuevas canciones, artistas y álbumes.
+          </p>
+        </div>
 
-  {topTracks.length > 0 && (
-    <section class="mb-12">
-      <h2 class="text-3xl font-bold text-white mb-8 text-center">Nuevos lanzamientos</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {topTracks.map((track) => (
-          <div class="bg-gray-800 rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:scale-105 border border-gray-700">
-            <div class="aspect-square bg-gray-700 relative overflow-hidden">
-              {track.album.images[0] ? (
-                <img 
-                  src={track.album.images[0].url} 
-                  alt={track.name}
-                  class="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
-                />
-              ) : (
-                <div class="w-full h-full flex items-center justify-center text-gray-400">
-                  <svg class="w-16 h-16" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                  </svg>
-                </div>
-              )}
-              <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
+        <!-- Sección de recomendaciones -->
+        <div class="space-y-12">
+
+          <!-- Canciones del momento -->
+          <div>
+            <div class="flex items-center justify-between mb-6">
+              <h2 class="text-2xl font-bold text-white">Canciones del momento</h2>
+              <button class="text-white hover:text-gray-300 text-sm font-medium cursor-pointer">Mostrar todo</button>
             </div>
-            <div class="p-6">
-              <h3 class="font-semibold text-white mb-2 truncate text-lg">{track.name}</h3>
-              <p class="text-sm text-gray-300 mb-2">
-                {track.artists.map((artist: any) => artist.name).join(', ')}
-              </p>
-              <p class="text-xs text-gray-400">{track.album.name}</p>
+            <div id="top-tracks-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+              <!-- Loading skeleton -->
+              <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4 animate-pulse">
+                <div class="aspect-square bg-gray-700 rounded-lg mb-4"></div>
+                <div class="h-4 bg-gray-700 rounded mb-2"></div>
+                <div class="h-3 bg-gray-700 rounded w-2/3"></div>
+              </div>
+              <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4 animate-pulse">
+                <div class="aspect-square bg-gray-700 rounded-lg mb-4"></div>
+                <div class="h-4 bg-gray-700 rounded mb-2"></div>
+                <div class="h-3 bg-gray-700 rounded w-2/3"></div>
+              </div>
+              <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4 animate-pulse">
+                <div class="aspect-square bg-gray-700 rounded-lg mb-4"></div>
+                <div class="h-4 bg-gray-700 rounded mb-2"></div>
+                <div class="h-3 bg-gray-700 rounded w-2/3"></div>
+              </div>
+              <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4 animate-pulse">
+                <div class="aspect-square bg-gray-700 rounded-lg mb-4"></div>
+                <div class="h-4 bg-gray-700 rounded mb-2"></div>
+                <div class="h-3 bg-gray-700 rounded w-2/3"></div>
+              </div>
+              <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4 animate-pulse">
+                <div class="aspect-square bg-gray-700 rounded-lg mb-4"></div>
+                <div class="h-4 bg-gray-700 rounded mb-2"></div>
+                <div class="h-3 bg-gray-700 rounded w-2/3"></div>
+              </div>
             </div>
           </div>
-        ))}
-      </div>
-    </section>
-  )}
 
-  <section class="grid grid-cols-1 md:grid-cols-3 gap-8">
-    <div class="text-center group">
-      <div class="w-20 h-20 bg-gradient-to-br from-green-400 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:shadow-green-500/25 transition-all duration-300 transform group-hover:scale-110">
-        <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-        </svg>
+          <!-- Nuevos lanzamientos -->
+          <div>
+            <div class="flex items-center justify-between mb-6">
+              <h2 class="text-2xl font-bold text-white">Nuevos lanzamientos</h2>
+              <button class="text-white hover:text-gray-300 text-sm font-medium cursor-pointer">Mostrar todo</button>
+            </div>
+            <div id="new-releases-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+              <!-- Loading skeleton -->
+              <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4 animate-pulse">
+                <div class="aspect-square bg-gray-700 rounded-lg mb-4"></div>
+                <div class="h-4 bg-gray-700 rounded mb-2"></div>
+                <div class="h-3 bg-gray-700 rounded w-2/3"></div>
+              </div>
+              <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4 animate-pulse">
+                <div class="aspect-square bg-gray-700 rounded-lg mb-4"></div>
+                <div class="h-4 bg-gray-700 rounded mb-2"></div>
+                <div class="h-3 bg-gray-700 rounded w-2/3"></div>
+              </div>
+              <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4 animate-pulse">
+                <div class="aspect-square bg-gray-700 rounded-lg mb-4"></div>
+                <div class="h-4 bg-gray-700 rounded mb-2"></div>
+                <div class="h-3 bg-gray-700 rounded w-2/3"></div>
+              </div>
+              <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4 animate-pulse">
+                <div class="aspect-square bg-gray-700 rounded-lg mb-4"></div>
+                <div class="h-4 bg-gray-700 rounded mb-2"></div>
+                <div class="h-3 bg-gray-700 rounded w-2/3"></div>
+              </div>
+              <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4 animate-pulse">
+                <div class="aspect-square bg-gray-700 rounded-lg mb-4"></div>
+                <div class="h-4 bg-gray-700 rounded mb-2"></div>
+                <div class="h-3 bg-gray-700 rounded w-2/3"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Categorías destacadas -->
+          <div>
+            <div class="flex items-center justify-between mb-6">
+              <h2 class="text-2xl font-bold text-white">Categorías destacadas</h2>
+              <button class="text-white hover:text-gray-300 text-sm font-medium cursor-pointer">Mostrar todo</button>
+            </div>
+            <div id="featured-playlists-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+              <!-- Loading skeleton -->
+              <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4 animate-pulse">
+                <div class="aspect-square bg-gray-700 rounded-lg mb-4"></div>
+                <div class="h-4 bg-gray-700 rounded mb-2"></div>
+                <div class="h-3 bg-gray-700 rounded w-2/3"></div>
+              </div>
+              <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4 animate-pulse">
+                <div class="aspect-square bg-gray-700 rounded-lg mb-4"></div>
+                <div class="h-4 bg-gray-700 rounded mb-2"></div>
+                <div class="h-3 bg-gray-700 rounded w-2/3"></div>
+              </div>
+              <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4 animate-pulse">
+                <div class="aspect-square bg-gray-700 rounded-lg mb-4"></div>
+                <div class="h-4 bg-gray-700 rounded mb-2"></div>
+                <div class="h-3 bg-gray-700 rounded w-2/3"></div>
+              </div>
+              <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4 animate-pulse">
+                <div class="aspect-square bg-gray-700 rounded-lg mb-4"></div>
+                <div class="h-4 bg-gray-700 rounded mb-2"></div>
+                <div class="h-3 bg-gray-700 rounded w-2/3"></div>
+              </div>
+              <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4 animate-pulse">
+                <div class="aspect-square bg-gray-700 rounded-lg mb-4"></div>
+                <div class="h-4 bg-gray-700 rounded mb-2"></div>
+                <div class="h-3 bg-gray-700 rounded w-2/3"></div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-      <h3 class="text-xl font-semibold text-white mb-3">Busca música</h3>
-      <p class="text-gray-300">Encuentra canciones, álbumes y artistas de todo el mundo</p>
     </div>
     
-    <div class="text-center group">
-      <div class="w-20 h-20 bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:shadow-blue-500/25 transition-all duration-300 transform group-hover:scale-110">
-        <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-        </svg>
+    <!-- Área de resultados de búsqueda -->
+    <div id="search-results" class="h-full overflow-y-auto px-6 py-4 hidden">
+      <div class="w-full">
+        <!-- Filtros de búsqueda - Sticky -->
+        <div class="sticky top-0 z-10 bg-black/95 backdrop-blur-sm border-b border-white/10 mb-6 -mx-6 px-6 py-4">
+          <div class="flex flex-wrap gap-2">
+            {[
+              { id: 'all', label: 'Todo' },
+              { id: 'tracks', label: 'Canciones' },
+              { id: 'albums', label: 'Álbumes' },
+              { id: 'artists', label: 'Artistas' }
+            ].map((filter) => (
+              <button
+                type="button"
+                data-filter={filter.id}
+                class={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer ${
+                  filter.id === 'all'
+                    ? 'bg-white text-black shadow-lg'
+                    : 'bg-gray-800/50 text-gray-300 hover:bg-gray-700/50 hover:text-white'
+                }`}
+              >
+                {filter.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <!-- Resultado más relevante - Sticky -->
+        <div id="top-result" class="sticky top-16 z-10 bg-black/95 backdrop-blur-sm border-b border-white/10 mb-8 -mx-6 px-6 py-4"></div>
+
+        <!-- Resultados por categorías -->
+        <div class="space-y-8">
+          <!-- Canciones -->
+          <div id="tracks-section" class="hidden">
+            <div class="flex items-center justify-between mb-6">
+              <h2 class="text-2xl font-bold text-white">Canciones</h2>
+              <button class="text-white hover:text-gray-300 text-sm font-medium cursor-pointer">Mostrar todo</button>
+            </div>
+            <div id="tracks-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6"></div>
+          </div>
+
+          <!-- Álbumes -->
+          <div id="albums-section" class="hidden">
+            <div class="flex items-center justify-between mb-6">
+              <h2 class="text-2xl font-bold text-white">Álbumes</h2>
+              <button class="text-white hover:text-gray-300 text-sm font-medium cursor-pointer">Mostrar todo</button>
+            </div>
+            <div id="albums-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6"></div>
+          </div>
+
+          <!-- Artistas -->
+          <div id="artists-section" class="hidden">
+            <div class="flex items-center justify-between mb-6">
+              <h2 class="text-2xl font-bold text-white">Artistas</h2>
+              <button class="text-white hover:text-gray-300 text-sm font-medium cursor-pointer">Mostrar todo</button>
+            </div>
+            <div id="artists-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6"></div>
+          </div>
+        </div>
       </div>
-      <h3 class="text-xl font-semibold text-white mb-3">Guarda favoritos</h3>
-      <p class="text-gray-300">Crea tu colección personal de música favorita</p>
     </div>
-    
-    <div class="text-center group">
-      <div class="w-20 h-20 bg-gradient-to-br from-purple-400 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:shadow-purple-500/25 transition-all duration-300 transform group-hover:scale-110">
-        <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path>
-        </svg>
-      </div>
-      <h3 class="text-xl font-semibold text-white mb-3">Escucha previews</h3>
-      <p class="text-gray-300">Disfruta de fragmentos de canciones antes de decidir</p>
-    </div>
-  </section>
+  </div>
 </Layout>
+
+<script>
+  // Variables globales para el estado de búsqueda
+  let currentSearchResults: any = null;
+  let currentFilter: string = 'all';
+
+  // Elementos del DOM
+  const welcomeContent = document.getElementById('welcome-content');
+  const searchResults = document.getElementById('search-results');
+  const topResult = document.getElementById('top-result');
+  const tracksSection = document.getElementById('tracks-section');
+  const albumsSection = document.getElementById('albums-section');
+  const artistsSection = document.getElementById('artists-section');
+  const tracksGrid = document.getElementById('tracks-grid');
+  const albumsGrid = document.getElementById('albums-grid');
+  const artistsGrid = document.getElementById('artists-grid');
+
+  // Función para cargar datos de recomendaciones
+  async function loadRecommendations() {
+    try {
+      // Cargar canciones populares
+      console.log('Cargando canciones populares...');
+      const topTracksResponse = await fetch('/api/spotify/top-tracks?limit=10');
+      const topTracksData = await topTracksResponse.json();
+      
+      if (topTracksData.success && topTracksData.data) {
+        console.log('Canciones populares cargadas:', topTracksData.data.length);
+        renderTopTracks(topTracksData.data);
+      } else {
+        console.error('Error en canciones populares:', topTracksData.error);
+        showErrorInSection('top-tracks-grid', 'Error cargando canciones populares');
+      }
+
+      // Cargar nuevos lanzamientos
+      console.log('Cargando nuevos lanzamientos...');
+      const newReleasesResponse = await fetch('/api/spotify/new-releases?limit=10');
+      const newReleasesData = await newReleasesResponse.json();
+      
+      if (newReleasesData.success && newReleasesData.data) {
+        console.log('Nuevos lanzamientos cargados:', newReleasesData.data.items.length);
+        renderNewReleases(newReleasesData.data.items);
+      } else {
+        console.error('Error en nuevos lanzamientos:', newReleasesData.error);
+        showErrorInSection('new-releases-grid', 'Error cargando nuevos lanzamientos');
+      }
+
+      // Cargar categorías destacadas
+      console.log('Cargando categorías...');
+      const featuredPlaylistsResponse = await fetch('/api/spotify/featured-playlists?limit=10');
+      const featuredPlaylistsData = await featuredPlaylistsResponse.json();
+      
+      if (featuredPlaylistsData.success && featuredPlaylistsData.data) {
+        console.log('Categorías cargadas:', featuredPlaylistsData.data.items.length);
+        renderFeaturedPlaylists(featuredPlaylistsData.data.items);
+      } else {
+        console.error('Error en categorías:', featuredPlaylistsData.error);
+        showErrorInSection('featured-playlists-grid', 'Error cargando categorías');
+      }
+
+    } catch (error) {
+      console.error('Error cargando recomendaciones:', error);
+    }
+  }
+
+  // Función para mostrar errores en una sección
+  function showErrorInSection(sectionId: string, message: string) {
+    const container = document.getElementById(sectionId);
+    if (container) {
+      container.innerHTML = `
+        <div class="col-span-full text-center py-8">
+          <div class="text-gray-400 mb-2">
+            <svg class="w-12 h-12 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+            </svg>
+          </div>
+          <p class="text-gray-400 text-sm">${message}</p>
+          <button onclick="loadRecommendations()" class="mt-4 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all duration-200">
+            Reintentar
+          </button>
+        </div>
+      `;
+    }
+  }
+
+  // Función para renderizar canciones populares
+  function renderTopTracks(tracks: any[]) {
+    const container = document.getElementById('top-tracks-grid')!;
+    container.innerHTML = '';
+
+    tracks.forEach((track: any) => {
+      const trackElement = document.createElement('div');
+      trackElement.className = 'bg-white/10 backdrop-blur-sm rounded-xl p-4 hover:bg-white/20 transition-all duration-200 cursor-pointer border border-white/10 group';
+      
+      const imageUrl = track.album?.images?.[0]?.url || '';
+      const gradientClass = getGradientClass(track.name);
+      
+      trackElement.innerHTML = `
+        <div class="aspect-square ${gradientClass} rounded-lg mb-4 flex items-center justify-center relative overflow-hidden">
+          ${imageUrl ? `
+            <img src="${imageUrl}" alt="${track.name}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+            <div class="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-all duration-200"></div>
+            <svg class="w-12 h-12 text-white relative z-10 opacity-0 group-hover:opacity-100 transition-all duration-200" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+          ` : `
+            <svg class="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+          `}
+        </div>
+        <h3 class="text-white font-semibold text-sm truncate">${track.name}</h3>
+        <p class="text-white/70 text-xs truncate">${track.artists?.map((a: any) => a.name).join(', ') || 'Artista desconocido'}</p>
+      `;
+      
+      container.appendChild(trackElement);
+    });
+  }
+
+  // Función para renderizar nuevos lanzamientos
+  function renderNewReleases(albums: any[]) {
+    const container = document.getElementById('new-releases-grid')!;
+    container.innerHTML = '';
+
+    albums.forEach((album: any) => {
+      const albumElement = document.createElement('div');
+      albumElement.className = 'bg-white/10 backdrop-blur-sm rounded-xl p-4 hover:bg-white/20 transition-all duration-200 cursor-pointer border border-white/10 group';
+      
+      const imageUrl = album.images?.[0]?.url || '';
+      const gradientClass = getGradientClass(album.name);
+      
+      albumElement.innerHTML = `
+        <div class="aspect-square ${gradientClass} rounded-lg mb-4 flex items-center justify-center relative overflow-hidden">
+          ${imageUrl ? `
+            <img src="${imageUrl}" alt="${album.name}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+            <div class="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-all duration-200"></div>
+            <svg class="w-12 h-12 text-white relative z-10 opacity-0 group-hover:opacity-100 transition-all duration-200" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+            </svg>
+          ` : `
+            <svg class="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+            </svg>
+          `}
+        </div>
+        <h3 class="text-white font-semibold text-sm truncate">${album.name}</h3>
+        <p class="text-white/70 text-xs truncate">${album.artists?.map((a: any) => a.name).join(', ') || 'Artista desconocido'}</p>
+      `;
+      
+      container.appendChild(albumElement);
+    });
+  }
+
+  // Función para renderizar playlists destacadas
+  function renderFeaturedPlaylists(playlists: any[]) {
+    const container = document.getElementById('featured-playlists-grid')!;
+    container!.innerHTML = '';
+
+    playlists.forEach((playlist: any) => {
+      const playlistElement = document.createElement('div');
+      playlistElement.className = 'bg-white/10 backdrop-blur-sm rounded-xl p-4 hover:bg-white/20 transition-all duration-200 cursor-pointer border border-white/10 group';
+      
+      const imageUrl = playlist.images?.[0]?.url || '';
+      const gradientClass = getGradientClass(playlist.name);
+      
+      playlistElement.innerHTML = `
+        <div class="aspect-square ${gradientClass} rounded-lg mb-4 flex items-center justify-center relative overflow-hidden">
+          ${imageUrl ? `
+            <img src="${imageUrl}" alt="${playlist.name}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+            <div class="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-all duration-200"></div>
+            <svg class="w-12 h-12 text-white relative z-10 opacity-0 group-hover:opacity-100 transition-all duration-200" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+            </svg>
+          ` : `
+            <svg class="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+            </svg>
+          `}
+        </div>
+        <h3 class="text-white font-semibold text-sm truncate">${playlist.name}</h3>
+        <p class="text-white/70 text-xs truncate">${playlist.description || 'Playlist'}</p>
+      `;
+      
+      container!.appendChild(playlistElement);
+    });
+  }
+
+  // Función para obtener clase de gradiente basada en el nombre
+  function getGradientClass(name: string) {
+    const gradients = [
+      'bg-gradient-to-br from-purple-500 to-pink-500',
+      'bg-gradient-to-br from-blue-500 to-cyan-500',
+      'bg-gradient-to-br from-green-500 to-emerald-500',
+      'bg-gradient-to-br from-red-500 to-orange-500',
+      'bg-gradient-to-br from-pink-500 to-rose-500',
+      'bg-gradient-to-br from-indigo-500 to-purple-500',
+      'bg-gradient-to-br from-teal-500 to-blue-500',
+      'bg-gradient-to-br from-rose-500 to-pink-500',
+      'bg-gradient-to-br from-amber-500 to-orange-500',
+      'bg-gradient-to-br from-lime-500 to-green-500'
+    ];
+    
+    // Usar el hash del nombre para seleccionar un gradiente consistente
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return gradients[Math.abs(hash) % gradients.length];
+  }
+
+  // Función para mostrar resultados de búsqueda
+  function showSearchResults(results: any) {
+    currentSearchResults = results;
+    welcomeContent?.classList.add('hidden');
+    searchResults?.classList.remove('hidden');
+    
+    // Limpiar resultados anteriores
+    topResult!.innerHTML = '';
+    tracksGrid!.innerHTML = '';
+    albumsGrid!.innerHTML = '';
+    artistsGrid!.innerHTML = '';
+    
+    // Ocultar todas las secciones
+    tracksSection?.classList.add('hidden');
+    albumsSection?.classList.add('hidden');
+    artistsSection?.classList.add('hidden');
+
+    if (!results) return;
+
+    // Mostrar resultado más relevante según el filtro actual
+    if (currentFilter === 'all' || currentFilter === 'tracks') {
+      if (results.tracks?.items?.length > 0) {
+        const track = results.tracks.items[0];
+        const imageUrl = track.album?.images?.[0]?.url || '';
+        const gradientClass = getGradientClass(track.name);
+        
+        topResult!.innerHTML = `
+          <div class="bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl p-6 shadow-xl">
+            <div class="flex items-center space-x-4">
+              <div class="w-24 h-24 ${gradientClass} rounded-lg flex items-center justify-center relative overflow-hidden">
+                ${imageUrl ? `
+                  <img src="${imageUrl}" alt="${track.name}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                  <svg class="w-12 h-12 text-white absolute inset-0 m-auto" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z"/>
+                  </svg>
+                ` : `
+                  <svg class="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z"/>
+                  </svg>
+                `}
+              </div>
+              <div>
+                <h3 class="text-white font-bold text-xl">${track.name}</h3>
+                <p class="text-white/80">${track.artists.map((a: any) => a.name).join(', ')}</p>
+                <p class="text-white/60 text-sm">${track.album.name}</p>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+    } else if (currentFilter === 'albums' && results.albums?.items?.length > 0) {
+      const album = results.albums.items[0];
+      const imageUrl = album.images?.[0]?.url || '';
+      const gradientClass = getGradientClass(album.name);
+      
+      topResult!.innerHTML = `
+        <div class="bg-gradient-to-r from-blue-600 to-cyan-600 rounded-xl p-6 shadow-xl">
+          <div class="flex items-center space-x-4">
+            <div class="w-24 h-24 ${gradientClass} rounded-lg flex items-center justify-center relative overflow-hidden">
+              ${imageUrl ? `
+                <img src="${imageUrl}" alt="${album.name}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <svg class="w-12 h-12 text-white absolute inset-0 m-auto" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                </svg>
+              ` : `
+                <svg class="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                </svg>
+              `}
+            </div>
+            <div>
+              <h3 class="text-white font-bold text-xl">${album.name}</h3>
+              <p class="text-white/80">${album.artists.map((a: any) => a.name).join(', ')}</p>
+              <p class="text-white/60 text-sm">Álbum</p>
+            </div>
+          </div>
+        </div>
+      `;
+    } else if (currentFilter === 'artists' && results.artists?.items?.length > 0) {
+      const artist = results.artists.items[0];
+      const imageUrl = artist.images?.[0]?.url || '';
+      const gradientClass = getGradientClass(artist.name);
+      
+      topResult!.innerHTML = `
+        <div class="bg-gradient-to-r from-green-600 to-emerald-600 rounded-xl p-6 shadow-xl">
+          <div class="flex items-center space-x-4">
+            <div class="w-24 h-24 ${gradientClass} rounded-full flex items-center justify-center relative overflow-hidden">
+              ${imageUrl ? `
+                <img src="${imageUrl}" alt="${artist.name}" class="w-full h-full object-cover rounded-full" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <svg class="w-12 h-12 text-white absolute inset-0 m-auto" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                </svg>
+              ` : `
+                <svg class="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                </svg>
+              `}
+            </div>
+            <div>
+              <h3 class="text-white font-bold text-xl">${artist.name}</h3>
+              <p class="text-white/80">${artist.followers?.total ? `${artist.followers.total.toLocaleString()} seguidores` : 'Artista'}</p>
+              <p class="text-white/60 text-sm">Artista</p>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // Mostrar secciones según el filtro actual
+    if (currentFilter === 'all' || currentFilter === 'tracks') {
+      if (results.tracks?.items?.length > 0) {
+        tracksSection?.classList.remove('hidden');
+        results.tracks.items.slice(0, 10).forEach((track: any) => {
+          const trackElement = document.createElement('div');
+          trackElement.className = 'bg-white/10 backdrop-blur-sm rounded-xl p-4 hover:bg-white/20 transition-all duration-200 cursor-pointer border border-white/10 group';
+          
+          const imageUrl = track.album?.images?.[0]?.url || '';
+          const gradientClass = getGradientClass(track.name);
+          
+          trackElement.innerHTML = `
+            <div class="aspect-square ${gradientClass} rounded-lg mb-4 flex items-center justify-center relative overflow-hidden">
+              ${imageUrl ? `
+                <img src="${imageUrl}" alt="${track.name}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-all duration-200"></div>
+                <svg class="w-8 h-8 text-white relative z-10 opacity-0 group-hover:opacity-100 transition-all duration-200" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+              ` : `
+                <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+              `}
+            </div>
+            <h3 class="text-white font-semibold text-sm truncate">${track.name}</h3>
+            <p class="text-white/70 text-xs truncate">${track.artists.map((a: any) => a.name).join(', ')}</p>
+          `;
+          tracksGrid?.appendChild(trackElement);
+        });
+      }
+    }
+
+    if (currentFilter === 'all' || currentFilter === 'albums') {
+      if (results.albums?.items?.length > 0) {
+        albumsSection?.classList.remove('hidden');
+        results.albums.items.slice(0, 10).forEach((album: any) => {
+          const albumElement = document.createElement('div');
+          albumElement.className = 'bg-white/10 backdrop-blur-sm rounded-xl p-4 hover:bg-white/20 transition-all duration-200 cursor-pointer border border-white/10 group';
+          
+          const imageUrl = album.images?.[0]?.url || '';
+          const gradientClass = getGradientClass(album.name);
+          
+          albumElement.innerHTML = `
+            <div class="aspect-square ${gradientClass} rounded-lg mb-4 flex items-center justify-center relative overflow-hidden">
+              ${imageUrl ? `
+                <img src="${imageUrl}" alt="${album.name}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-all duration-200"></div>
+                <svg class="w-8 h-8 text-white relative z-10 opacity-0 group-hover:opacity-100 transition-all duration-200" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                </svg>
+              ` : `
+                <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                </svg>
+              `}
+            </div>
+            <h3 class="text-white font-semibold text-sm truncate">${album.name}</h3>
+            <p class="text-white/70 text-xs truncate">${album.artists.map((a: any) => a.name).join(', ')}</p>
+          `;
+          albumsGrid?.appendChild(albumElement);
+        });
+      }
+    }
+
+    if (currentFilter === 'all' || currentFilter === 'artists') {
+      if (results.artists?.items?.length > 0) {
+        artistsSection?.classList.remove('hidden');
+        results.artists.items.slice(0, 10).forEach((artist: any) => {
+          const artistElement = document.createElement('div');
+          artistElement.className = 'bg-white/10 backdrop-blur-sm rounded-xl p-4 hover:bg-white/20 transition-all duration-200 cursor-pointer border border-white/10 group';
+          
+          const imageUrl = artist.images?.[0]?.url || '';
+          const gradientClass = getGradientClass(artist.name);
+          
+          artistElement.innerHTML = `
+            <div class="aspect-square ${gradientClass} rounded-lg mb-4 flex items-center justify-center relative overflow-hidden">
+              ${imageUrl ? `
+                <img src="${imageUrl}" alt="${artist.name}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-all duration-200"></div>
+                <svg class="w-8 h-8 text-white relative z-10 opacity-0 group-hover:opacity-100 transition-all duration-200" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                </svg>
+              ` : `
+                <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                </svg>
+              `}
+            </div>
+            <h3 class="text-white font-semibold text-sm truncate">${artist.name}</h3>
+            <p class="text-white/70 text-xs truncate">${artist.followers?.total ? `${artist.followers.total.toLocaleString()} seguidores` : 'Artista'}</p>
+          `;
+          artistsGrid?.appendChild(artistElement);
+        });
+      }
+    }
+  }
+
+  // Función para limpiar búsqueda
+  function clearSearch() {
+    currentSearchResults = null;
+    welcomeContent?.classList.remove('hidden');
+    searchResults?.classList.add('hidden');
+  }
+
+  // Función para cambiar filtro
+  function changeFilter(filter: string) {
+    currentFilter = filter;
+    if (currentSearchResults) {
+      showSearchResults(currentSearchResults);
+    }
+  }
+
+  // Escuchar eventos del header
+  window.addEventListener('searchResults', (event: any) => {
+    showSearchResults(event.detail);
+  });
+
+  window.addEventListener('clearSearch', () => {
+    clearSearch();
+  });
+
+  window.addEventListener('filterChanged', (event: any) => {
+    changeFilter(event.detail.filter);
+  });
+
+  // Hacer que los elementos de recomendación sean clickeables
+  document.addEventListener('DOMContentLoaded', () => {
+    // Cargar recomendaciones al cargar la página
+    loadRecommendations();
+
+    // Configurar filtros en la sección de resultados
+    const filterButtons = document.querySelectorAll('[data-filter]');
+    filterButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const filterId = btn.getAttribute('data-filter');
+        if (filterId) {
+          // Actualizar estado visual de los filtros
+          filterButtons.forEach(b => {
+            b.classList.remove('bg-white', 'text-black', 'shadow-lg');
+            b.classList.add('bg-gray-800/50', 'text-gray-300');
+          });
+          btn.classList.remove('bg-gray-800/50', 'text-gray-300');
+          btn.classList.add('bg-white', 'text-black', 'shadow-lg');
+          
+          // Actualizar el filtro actual
+          currentFilter = filterId;
+          
+          // Si hay resultados, filtrarlos
+          if (currentSearchResults) {
+            showSearchResults(currentSearchResults);
+          }
+          
+          // Emitir evento para que el header sepa qué filtro está activo
+          window.dispatchEvent(new CustomEvent('filterChanged', { 
+            detail: { filter: filterId } 
+          }));
+        }
+      });
+    });
+  });
+</script>

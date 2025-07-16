@@ -6,8 +6,10 @@ export const GET: APIRoute = async ({ url }) => {
   try {
     const searchParams = url.searchParams;
     const query = searchParams.get('q');
-    const type = searchParams.get('type') as 'track' | 'album' | 'artist' || 'track';
+    const type = searchParams.get('type') || 'track,album,artist';
     const limit = parseInt(searchParams.get('limit') || '20');
+
+    console.log('Search request:', { query, type, limit });
 
     if (!query) {
       return new Response(
@@ -29,7 +31,9 @@ export const GET: APIRoute = async ({ url }) => {
       );
     }
 
+    console.log('Calling Spotify service with:', { query, type, limit });
     const results = await spotifyService.search(query, type, limit);
+    console.log('Spotify results received:', Object.keys(results));
 
     const response: ApiResponse = {
       success: true,
@@ -44,10 +48,16 @@ export const GET: APIRoute = async ({ url }) => {
 
   } catch (error) {
     console.error('Error en búsqueda de Spotify:', error);
+    console.error('Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
+    });
+    
     return new Response(
       JSON.stringify({
         success: false,
-        error: 'Error al buscar en Spotify'
+        error: 'Error al buscar en Spotify',
+        details: error instanceof Error ? error.message : 'Unknown error'
       } as ApiResponse),
       { status: 500, headers: { 'Content-Type': 'application/json' } }
     );

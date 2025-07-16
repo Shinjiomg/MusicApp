@@ -1,4 +1,8 @@
 import type { SpotifySearchResponse, SpotifyTrack, SpotifyAlbum, SpotifyArtist } from '../types';
+import dotenv from 'dotenv';
+
+// Asegurar que las variables de entorno se carguen
+dotenv.config();
 
 class SpotifyService {
   private clientId: string;
@@ -9,11 +13,23 @@ class SpotifyService {
   constructor() {
     this.clientId = process.env.SPOTIFY_CLIENT_ID || '';
     this.clientSecret = process.env.SPOTIFY_CLIENT_SECRET || '';
+    
+    // Debug: mostrar información de las credenciales (sin mostrar los valores completos)
+    console.log('Spotify Service initialized:');
+    console.log('- Client ID configured:', !!this.clientId);
+    console.log('- Client Secret configured:', !!this.clientSecret);
+    console.log('- Client ID length:', this.clientId.length);
+    console.log('- Client Secret length:', this.clientSecret.length);
   }
 
-  private async getAccessToken(): Promise<string> {
+  public async getAccessToken(): Promise<string> {
     if (this.accessToken && Date.now() < this.tokenExpiry) {
       return this.accessToken!;
+    }
+
+    // Verificar que las credenciales estén configuradas
+    if (!this.clientId || !this.clientSecret) {
+      throw new Error('Spotify credentials not configured. Please set SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET environment variables.');
     }
 
     const response = await fetch('https://accounts.spotify.com/api/token', {
@@ -28,7 +44,8 @@ class SpotifyService {
     const data = await response.json();
     
     if (!response.ok) {
-      throw new Error('Failed to get Spotify access token');
+      console.error('Spotify API Error:', data);
+      throw new Error(`Failed to get Spotify access token: ${data.error || response.statusText}`);
     }
 
     this.accessToken = data.access_token;
@@ -37,7 +54,7 @@ class SpotifyService {
     return this.accessToken;
   }
 
-  async search(query: string, type: 'track' | 'album' | 'artist' = 'track', limit: number = 20): Promise<SpotifySearchResponse> {
+  async search(query: string, type: string = 'track', limit: number = 20): Promise<SpotifySearchResponse> {
     const token = await this.getAccessToken();
     
     const response = await fetch(
