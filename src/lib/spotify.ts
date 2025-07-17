@@ -1,8 +1,4 @@
 import type { SpotifySearchResponse, SpotifyTrack, SpotifyAlbum, SpotifyArtist } from '../types';
-import dotenv from 'dotenv';
-
-// Asegurar que las variables de entorno se carguen
-dotenv.config();
 
 class SpotifyService {
   private clientId: string;
@@ -11,8 +7,9 @@ class SpotifyService {
   private tokenExpiry: number = 0;
 
   constructor() {
-    this.clientId = process.env.SPOTIFY_CLIENT_ID || '';
-    this.clientSecret = process.env.SPOTIFY_CLIENT_SECRET || '';
+    // En Astro con Cloudflare, las variables se acceden con import.meta.env
+    this.clientId = import.meta.env.SPOTIFY_CLIENT_ID || '';
+    this.clientSecret = import.meta.env.SPOTIFY_CLIENT_SECRET || '';
     
     // Debug: mostrar información de las credenciales (sin mostrar los valores completos)
     console.log('=== SPOTIFY SERVICE INIT ===');
@@ -20,8 +17,8 @@ class SpotifyService {
     console.log('- Client Secret configured:', !!this.clientSecret);
     console.log('- Client ID length:', this.clientId.length);
     console.log('- Client Secret length:', this.clientSecret.length);
-    console.log('- Environment:', process.env.NODE_ENV);
-    console.log('- All env vars:', Object.keys(process.env).filter(key => key.includes('SPOTIFY')));
+    console.log('- Environment:', import.meta.env.MODE);
+    console.log('- All env vars:', Object.keys(import.meta.env).filter(key => key.includes('SPOTIFY')));
   }
 
   public async getAccessToken(): Promise<string> {
@@ -37,6 +34,7 @@ class SpotifyService {
       console.error('Missing credentials:');
       console.error('- Client ID:', !!this.clientId);
       console.error('- Client Secret:', !!this.clientSecret);
+      console.error('Available env vars:', Object.keys(import.meta.env));
       throw new Error('Spotify credentials not configured. Please set SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET environment variables.');
     }
 

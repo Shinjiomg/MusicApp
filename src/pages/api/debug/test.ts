@@ -3,26 +3,26 @@ import type { APIRoute } from 'astro';
 export const GET: APIRoute = async () => {
   try {
     // Debug más detallado
-    const allEnvVars = Object.keys(process.env);
+    const allEnvVars = Object.keys(import.meta.env);
     const spotifyVars = allEnvVars.filter(key => key.includes('SPOTIFY'));
     
     const debugInfo = {
       timestamp: new Date().toISOString(),
-      nodeEnv: process.env.NODE_ENV,
+      nodeEnv: import.meta.env.MODE,
       allEnvVarsCount: allEnvVars.length,
       allEnvVars: allEnvVars.slice(0, 20), // Solo las primeras 20 para no saturar
       spotifyVars: spotifyVars,
       spotifyClientId: {
-        raw: process.env.SPOTIFY_CLIENT_ID,
-        exists: !!process.env.SPOTIFY_CLIENT_ID,
-        length: process.env.SPOTIFY_CLIENT_ID?.length || 0,
-        type: typeof process.env.SPOTIFY_CLIENT_ID
+        raw: import.meta.env.SPOTIFY_CLIENT_ID,
+        exists: !!import.meta.env.SPOTIFY_CLIENT_ID,
+        length: import.meta.env.SPOTIFY_CLIENT_ID?.length || 0,
+        type: typeof import.meta.env.SPOTIFY_CLIENT_ID
       },
       spotifyClientSecret: {
-        raw: process.env.SPOTIFY_CLIENT_SECRET,
-        exists: !!process.env.SPOTIFY_CLIENT_SECRET,
-        length: process.env.SPOTIFY_CLIENT_SECRET?.length || 0,
-        type: typeof process.env.SPOTIFY_CLIENT_SECRET
+        raw: import.meta.env.SPOTIFY_CLIENT_SECRET,
+        exists: !!import.meta.env.SPOTIFY_CLIENT_SECRET,
+        length: import.meta.env.SPOTIFY_CLIENT_SECRET?.length || 0,
+        type: typeof import.meta.env.SPOTIFY_CLIENT_SECRET
       },
       // Verificar si hay variables con espacios o caracteres especiales
       envVarsWithSpaces: allEnvVars.filter(key => key.includes(' ')),
