@@ -7,38 +7,27 @@ class SpotifyService {
   private tokenExpiry: number = 0;
 
   constructor() {
-    // En Astro con Cloudflare, las variables se acceden con import.meta.env
-    this.clientId = import.meta.env.SPOTIFY_CLIENT_ID || '';
-    this.clientSecret = import.meta.env.SPOTIFY_CLIENT_SECRET || '';
+    this.clientId = import.meta.env.PUBLIC_SPOTIFY_CLIENT_ID || '';
+    this.clientSecret = import.meta.env.PUBLIC_SPOTIFY_CLIENT_SECRET || '';
     
     // Debug: mostrar información de las credenciales (sin mostrar los valores completos)
-    console.log('=== SPOTIFY SERVICE INIT ===');
+    console.log('Spotify Service initialized:');
     console.log('- Client ID configured:', !!this.clientId);
     console.log('- Client Secret configured:', !!this.clientSecret);
     console.log('- Client ID length:', this.clientId.length);
     console.log('- Client Secret length:', this.clientSecret.length);
-    console.log('- Environment:', import.meta.env.MODE);
-    console.log('- All env vars:', Object.keys(import.meta.env).filter(key => key.includes('SPOTIFY')));
   }
 
   public async getAccessToken(): Promise<string> {
-    console.log('=== GETTING ACCESS TOKEN ===');
-    
     if (this.accessToken && Date.now() < this.tokenExpiry) {
-      console.log('Using cached token');
       return this.accessToken!;
     }
 
     // Verificar que las credenciales estén configuradas
     if (!this.clientId || !this.clientSecret) {
-      console.error('Missing credentials:');
-      console.error('- Client ID:', !!this.clientId);
-      console.error('- Client Secret:', !!this.clientSecret);
-      console.error('Available env vars:', Object.keys(import.meta.env));
       throw new Error('Spotify credentials not configured. Please set SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET environment variables.');
     }
 
-    console.log('Making token request to Spotify...');
     const response = await fetch('https://accounts.spotify.com/api/token', {
       method: 'POST',
       headers: {
@@ -47,9 +36,6 @@ class SpotifyService {
       },
       body: 'grant_type=client_credentials'
     });
-
-    console.log('Token response status:', response.status);
-    console.log('Token response headers:', Object.fromEntries(response.headers.entries()));
 
     const data = await response.json();
     
@@ -61,7 +47,6 @@ class SpotifyService {
     this.accessToken = data.access_token;
     this.tokenExpiry = Date.now() + (data.expires_in * 1000);
     
-    console.log('Token obtained successfully, expires in:', data.expires_in, 'seconds');
     return this.accessToken;
   }
 

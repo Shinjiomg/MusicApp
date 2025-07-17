@@ -1,11 +1,27 @@
-import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import type { User } from '../types';
 
-// En Astro con Cloudflare, las variables se acceden con import.meta.env
-const JWT_SECRET = import.meta.env.JWT_SECRET || 'fallback-secret';
+const JWT_SECRET = import.meta.env.PUBLIC_JWT_SECRET || 'fallback_secret_key';
+const JWT_EXPIRES_IN = '7d';
 
-export function generateToken(payload: any): string {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' });
+export async function hashPassword(password: string): Promise<string> {
+  const saltRounds = 12;
+  return bcrypt.hash(password, saltRounds);
+}
+
+export async function comparePassword(password: string, hash: string): Promise<boolean> {
+  return bcrypt.compare(password, hash);
+}
+
+export function generateToken(user: User): string {
+  const payload = {
+    userId: user.id,
+    email: user.email,
+    username: user.username
+  };
+  
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 }
 
 export function verifyToken(token: string): any {
@@ -14,14 +30,6 @@ export function verifyToken(token: string): any {
   } catch (error) {
     return null;
   }
-}
-
-export async function hashPassword(password: string): Promise<string> {
-  return bcrypt.hash(password, 10);
-}
-
-export async function comparePassword(password: string, hash: string): Promise<boolean> {
-  return bcrypt.compare(password, hash);
 }
 
 export function extractTokenFromHeader(authHeader: string | undefined): string | null {

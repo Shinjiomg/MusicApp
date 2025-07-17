@@ -9,7 +9,7 @@ export async function getDatabase(): Promise<Database> {
     return db;
   }
 
-  const dbPath = path.join(process.cwd(), 'src', 'db', 'database.sqlite');
+  const dbPath = import.meta.env.PUBLIC_DATABASE_URL || path.join(process.cwd(), 'src', 'db', 'database.sqlite');
   
   db = await open({
     filename: dbPath,
