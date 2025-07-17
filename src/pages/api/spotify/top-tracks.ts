@@ -21,7 +21,7 @@ export const GET: APIRoute = async ({ url }) => {
 
     const token = await spotifyService.getAccessToken();
     
-    // Usar nuevos lanzamientos y obtener las canciones de esos álbumes
+    // Usar nuevos lanzamientos directamente
     const response = await fetch(
       `https://api.spotify.com/v1/browse/new-releases?limit=${limit}`,
       {
@@ -39,45 +39,27 @@ export const GET: APIRoute = async ({ url }) => {
 
     const data = await response.json();
     
-    // Obtener las canciones de los álbumes más populares
-    const tracks: any[] = [];
-    
-    // Tomar los primeros álbumes y obtener sus canciones
-    const albumsToProcess = data.albums.items.slice(0, Math.min(5, data.albums.items.length));
-    
-    for (const album of albumsToProcess) {
-      try {
-        const albumTracksResponse = await fetch(
-          `https://api.spotify.com/v1/albums/${album.id}/tracks?limit=2`,
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          }
-        );
-        
-        if (albumTracksResponse.ok) {
-          const albumTracksData = await albumTracksResponse.json();
-          const albumTracks = albumTracksData.items.map((track: any) => ({
-            ...track,
-            album: {
-              id: album.id,
-              name: album.name,
-              images: album.images,
-              external_urls: album.external_urls
-            }
-          }));
-          tracks.push(...albumTracks);
-        }
-      } catch (error) {
-        console.warn(`Error getting tracks for album ${album.id}:`, error);
-      }
-    }
+    // Convertir álbumes a formato de tracks
+    const tracks = data.albums.items.map((album: any) => ({
+      id: album.id,
+      name: album.name,
+      artists: album.artists,
+      album: {
+        id: album.id,
+        name: album.name,
+        images: album.images,
+        external_urls: album.external_urls
+      },
+      external_urls: album.external_urls,
+      // Valores por defecto ya que no tenemos info de track específica
+      duration_ms: 0,
+      popularity: 50
+    }));
 
     const apiResponse: ApiResponse = {
       success: true,
-      data: tracks.slice(0, limit),
-      message: 'Canciones populares obtenidas exitosamente'
+      data: tracks,
+      message: 'Nuevos lanzamientos obtenidos exitosamente'
     };
 
     return new Response(
@@ -86,12 +68,12 @@ export const GET: APIRoute = async ({ url }) => {
     );
 
   } catch (error) {
-    console.error('Error obteniendo canciones populares:', error);
+    console.error('Error obteniendo nuevos lanzamientos:', error);
     
     return new Response(
       JSON.stringify({
         success: false,
-        error: 'Error al obtener canciones populares',
+        error: 'Error al obtener nuevos lanzamientos',
         details: error instanceof Error ? error.message : 'Unknown error'
       } as ApiResponse),
       { status: 500, headers: { 'Content-Type': 'application/json' } }
