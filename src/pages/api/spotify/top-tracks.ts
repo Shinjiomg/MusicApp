@@ -86,10 +86,65 @@ export const GET: APIRoute = async ({ url }) => {
       .sort((a, b) => (b.popularity || 0) - (a.popularity || 0))
       .slice(0, limit);
 
+    // Si no hay tracks disponibles, intentar obtener tracks populares directamente
+    if (sortedTracks.length === 0) {
+      console.log('No se encontraron tracks de álbumes nuevos, intentando obtener tracks populares...');
+      
+      try {
+        // Intentar obtener tracks populares de diferentes países
+        const countries = ['US', 'GB', 'ES', 'MX', 'AR'];
+        
+        for (const country of countries) {
+          const popularTracksResponse = await fetch(
+            `https://api.spotify.com/v1/browse/featured-playlists?country=${country}&limit=1`,
+            {
+              headers: {
+                'Authorization': `Bearer ${token}`
+              }
+            }
+          );
+          
+          if (popularTracksResponse.ok) {
+            const playlistsData = await popularTracksResponse.json();
+            
+            if (playlistsData.playlists?.items?.length > 0) {
+              const playlist = playlistsData.playlists.items[0];
+              
+              // Obtener tracks de la playlist
+              const playlistTracksResponse = await fetch(
+                `https://api.spotify.com/v1/playlists/${playlist.id}/tracks?limit=${Math.min(limit, 10)}`,
+                {
+                  headers: {
+                    'Authorization': `Bearer ${token}`
+                  }
+                }
+              );
+              
+              if (playlistTracksResponse.ok) {
+                const playlistTracksData = await playlistTracksResponse.json();
+                const playlistTracks = playlistTracksData.items
+                  .map((item: any) => item.track)
+                  .filter((track: any) => track && track.id);
+                
+                if (playlistTracks.length > 0) {
+                  sortedTracks.push(...playlistTracks);
+                  break;
+                }
+              }
+            }
+          }
+        }
+      } catch (fallbackError) {
+        console.warn('Error en fallback de tracks populares:', fallbackError);
+      }
+    }
+
     const apiResponse: ApiResponse = {
       success: true,
       data: sortedTracks,
-      message: 'Canciones populares obtenidas exitosamente'
+      message: sortedTracks.length > 0 
+        ? 'Canciones populares obtenidas exitosamente' 
+        : 'La API de Spotify no está trayendo canciones populares en este momento'
     };
 
     return new Response(

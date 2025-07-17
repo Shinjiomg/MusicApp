@@ -253,18 +253,23 @@ import Layout from '../layouts/Layout.astro';
 
   // Función para cargar datos de recomendaciones
   async function loadRecommendations() {
+    // Mostrar skeletons inicialmente
+    showSkeletonInSection('top-tracks-grid', 'tracks');
+    showSkeletonInSection('new-releases-grid', 'albums');
+    showSkeletonInSection('featured-playlists-grid', 'playlists');
+    
     try {
       // Cargar canciones populares
       console.log('Cargando canciones populares...');
       const topTracksResponse = await fetch('/api/spotify/top-tracks?limit=10');
       const topTracksData = await topTracksResponse.json();
       
-      if (topTracksData.success && topTracksData.data) {
+      if (topTracksData.success && topTracksData.data && topTracksData.data.length > 0) {
         console.log('Canciones populares cargadas:', topTracksData.data.length);
         renderTopTracks(topTracksData.data);
       } else {
-        console.error('Error en canciones populares:', topTracksData.error);
-        showErrorInSection('top-tracks-grid', 'Error cargando canciones populares');
+        console.log('Mostrando skeleton para canciones populares');
+        showSkeletonInSection('top-tracks-grid', 'tracks');
       }
 
       // Cargar nuevos lanzamientos
@@ -272,12 +277,12 @@ import Layout from '../layouts/Layout.astro';
       const newReleasesResponse = await fetch('/api/spotify/new-releases?limit=10');
       const newReleasesData = await newReleasesResponse.json();
       
-      if (newReleasesData.success && newReleasesData.data) {
+      if (newReleasesData.success && newReleasesData.data && newReleasesData.data.items && newReleasesData.data.items.length > 0) {
         console.log('Nuevos lanzamientos cargados:', newReleasesData.data.items.length);
         renderNewReleases(newReleasesData.data.items);
       } else {
-        console.error('Error en nuevos lanzamientos:', newReleasesData.error);
-        showErrorInSection('new-releases-grid', 'Error cargando nuevos lanzamientos');
+        console.log('Mostrando skeleton para nuevos lanzamientos');
+        showSkeletonInSection('new-releases-grid', 'albums');
       }
 
       // Cargar categorías destacadas
@@ -285,16 +290,20 @@ import Layout from '../layouts/Layout.astro';
       const featuredPlaylistsResponse = await fetch('/api/spotify/featured-playlists?limit=10');
       const featuredPlaylistsData = await featuredPlaylistsResponse.json();
       
-      if (featuredPlaylistsData.success && featuredPlaylistsData.data) {
+      if (featuredPlaylistsData.success && featuredPlaylistsData.data && featuredPlaylistsData.data.items && featuredPlaylistsData.data.items.length > 0) {
         console.log('Categorías cargadas:', featuredPlaylistsData.data.items.length);
         renderFeaturedPlaylists(featuredPlaylistsData.data.items);
       } else {
-        console.error('Error en categorías:', featuredPlaylistsData.error);
-        showErrorInSection('featured-playlists-grid', 'Error cargando categorías');
+        console.log('Mostrando skeleton para categorías destacadas');
+        showSkeletonInSection('featured-playlists-grid', 'playlists');
       }
 
     } catch (error) {
       console.error('Error cargando recomendaciones:', error);
+      // Mostrar errores en todas las secciones si hay un error general
+      showErrorInSection('top-tracks-grid', 'Error de conexión. Intenta de nuevo más tarde.');
+      showErrorInSection('new-releases-grid', 'Error de conexión. Intenta de nuevo más tarde.');
+      showErrorInSection('featured-playlists-grid', 'Error de conexión. Intenta de nuevo más tarde.');
     }
   }
 
@@ -316,6 +325,43 @@ import Layout from '../layouts/Layout.astro';
         </div>
       `;
     }
+  }
+
+  // Función para mostrar skeleton loading
+  function showSkeletonInSection(sectionId: string, type: 'tracks' | 'albums' | 'playlists') {
+    const container = document.getElementById(sectionId);
+    if (!container) return;
+    
+    let skeletonHTML = '';
+    const count = type === 'tracks' ? 5 : 6; // Menos tracks, más álbumes/playlists
+    
+    for (let i = 0; i < count; i++) {
+      const delay = i * 100; // Delay escalonado para cada skeleton
+      
+      if (type === 'tracks') {
+        skeletonHTML += `
+          <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/10 animate-pulse" style="animation-delay: ${delay}ms">
+            <div class="aspect-square bg-gradient-to-br from-white/20 to-white/10 rounded-lg mb-4 relative overflow-hidden">
+              <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer"></div>
+            </div>
+            <div class="h-4 bg-gradient-to-r from-white/20 to-white/10 rounded mb-2"></div>
+            <div class="h-3 bg-gradient-to-r from-white/20 to-white/10 rounded w-3/4"></div>
+          </div>
+        `;
+      } else {
+        skeletonHTML += `
+          <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/10 animate-pulse" style="animation-delay: ${delay}ms">
+            <div class="aspect-square bg-gradient-to-br from-white/20 to-white/10 rounded-lg mb-4 relative overflow-hidden">
+              <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer"></div>
+            </div>
+            <div class="h-4 bg-gradient-to-r from-white/20 to-white/10 rounded mb-2"></div>
+            <div class="h-3 bg-gradient-to-r from-white/20 to-white/10 rounded w-2/3"></div>
+          </div>
+        `;
+      }
+    }
+    
+    container.innerHTML = skeletonHTML;
   }
 
   // Función para renderizar canciones populares
@@ -400,13 +446,21 @@ import Layout from '../layouts/Layout.astro';
           ${imageUrl ? `
             <img src="${imageUrl}" alt="${album.name}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
             <div class="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-all duration-200"></div>
-            <svg class="w-12 h-12 text-white relative z-10 opacity-0 group-hover:opacity-100 transition-all duration-200" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-            </svg>
+            <div class="absolute inset-0 flex items-center justify-center">
+              <a href="${album.external_urls?.spotify || '#'}" target="_blank" rel="noopener noreferrer" class="w-12 h-12 bg-green-500 hover:bg-green-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 transform group-hover:scale-110 shadow-lg">
+                <svg class="w-6 h-6 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+              </a>
+            </div>
           ` : `
-            <svg class="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-            </svg>
+            <div class="absolute inset-0 flex items-center justify-center">
+              <a href="${album.external_urls?.spotify || '#'}" target="_blank" rel="noopener noreferrer" class="w-12 h-12 bg-green-500 hover:bg-green-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 transform group-hover:scale-110 shadow-lg">
+                <svg class="w-6 h-6 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+              </a>
+            </div>
           `}
           <div class="absolute top-2 right-2 favorite-button-container" data-spotify-id="${album.id}" data-type="album" data-name="${album.name}" data-image-url="${imageUrl}" data-external-url="${album.external_urls?.spotify || ''}"></div>
         </div>
@@ -418,6 +472,8 @@ import Layout from '../layouts/Layout.astro';
       
       // Renderizar botones de acción
       renderActionButtons(albumElement.querySelector('.favorite-button-container'), album.id, 'album', album.name, imageUrl, album.external_urls?.spotify);
+      
+      // No necesitamos event listener adicional ya que el enlace del botón maneja la navegación
     });
   }
 
@@ -438,13 +494,21 @@ import Layout from '../layouts/Layout.astro';
           ${imageUrl ? `
             <img src="${imageUrl}" alt="${playlist.name}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
             <div class="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-all duration-200"></div>
-            <svg class="w-12 h-12 text-white relative z-10 opacity-0 group-hover:opacity-100 transition-all duration-200" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-            </svg>
+            <div class="absolute inset-0 flex items-center justify-center">
+              <a href="${playlist.external_urls?.spotify || '#'}" target="_blank" rel="noopener noreferrer" class="w-12 h-12 bg-green-500 hover:bg-green-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 transform group-hover:scale-110 shadow-lg">
+                <svg class="w-6 h-6 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+              </a>
+            </div>
           ` : `
-            <svg class="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-            </svg>
+            <div class="absolute inset-0 flex items-center justify-center">
+              <a href="${playlist.external_urls?.spotify || '#'}" target="_blank" rel="noopener noreferrer" class="w-12 h-12 bg-green-500 hover:bg-green-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 transform group-hover:scale-110 shadow-lg">
+                <svg class="w-6 h-6 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+              </a>
+            </div>
           `}
         </div>
         <h3 class="text-white font-semibold text-sm truncate">${playlist.name}</h3>
@@ -452,6 +516,8 @@ import Layout from '../layouts/Layout.astro';
       `;
       
       container!.appendChild(playlistElement);
+      
+      // No necesitamos event listener adicional ya que el enlace del botón maneja la navegación
     });
   }
 
