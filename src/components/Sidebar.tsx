@@ -176,6 +176,24 @@ export default function Sidebar(props: SidebarProps) {
                       <div 
                         class="bg-white/10 backdrop-blur-sm rounded-xl p-4 hover:bg-white/20 transition-all duration-200 cursor-pointer border border-white/10 shadow-lg w-full group animate-fade-in hover-lift"
                         style={`animation-delay: ${index * 100}ms`}
+                        onClick={() => {
+                          if (favorite.external_url) {
+                            if (favorite.type === 'track') {
+                              // Para tracks, abrir el reproductor
+                              window.dispatchEvent(new CustomEvent('openSpotifyPlayer', {
+                                detail: {
+                                  spotifyUrl: favorite.external_url,
+                                  trackName: favorite.name,
+                                  artistName: 'Canción',
+                                  imageUrl: favorite.image_url
+                                }
+                              }));
+                            } else {
+                              // Para álbumes y artistas, redirigir directamente
+                              window.open(favorite.external_url, '_blank', 'noopener,noreferrer');
+                            }
+                          }
+                        }}
                       >
                         <div class="flex items-center space-x-3 w-full">
                           <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg flex items-center justify-center flex-shrink-0 shadow-lg relative overflow-hidden group">
@@ -204,6 +222,13 @@ export default function Sidebar(props: SidebarProps) {
                               </>
                             ) : null}
                             <div class="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-all duration-200"></div>
+                            <div class="absolute inset-0 flex items-center justify-center">
+                              <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 transform group-hover:scale-110 shadow-lg">
+                                <svg class="w-4 h-4 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                                  <path d="M8 5v14l11-7z"/>
+                                </svg>
+                              </div>
+                            </div>
                             <svg class="w-6 h-6 text-white relative z-10" fill="currentColor" viewBox="0 0 24 24">
                               {favorite.type === 'track' ? (
                                 <path d="M8 5v14l11-7z"/>
@@ -224,6 +249,7 @@ export default function Sidebar(props: SidebarProps) {
                           </div>
                           <button 
                             onClick={(e) => {
+                              e.preventDefault();
                               e.stopPropagation();
                               removeFavorite(favorite.id);
                             }}

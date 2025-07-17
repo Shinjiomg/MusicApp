@@ -21,9 +21,9 @@ export const GET: APIRoute = async ({ url }) => {
 
     const token = await spotifyService.getAccessToken();
     
-    // Usar nuevos lanzamientos directamente
+    // Obtener nuevos lanzamientos
     const response = await fetch(
-      `https://api.spotify.com/v1/browse/new-releases?limit=${limit}`,
+      `https://api.spotify.com/v1/browse/new-releases?limit=${Math.min(limit, 10)}`,
       {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -39,27 +39,57 @@ export const GET: APIRoute = async ({ url }) => {
 
     const data = await response.json();
     
-    // Convertir álbumes a formato de tracks
-    const tracks = data.albums.items.map((album: any) => ({
-      id: album.id,
-      name: album.name,
-      artists: album.artists,
-      album: {
-        id: album.id,
-        name: album.name,
-        images: album.images,
-        external_urls: album.external_urls
-      },
-      external_urls: album.external_urls,
-      // Valores por defecto ya que no tenemos info de track específica
-      duration_ms: 0,
-      popularity: 50
-    }));
+    // Obtener las canciones más populares de los álbumes
+    const tracks: any[] = [];
+    
+    for (const album of data.albums.items) {
+      try {
+        // Obtener las canciones del álbum
+        const albumTracksResponse = await fetch(
+          `https://api.spotify.com/v1/albums/${album.id}/tracks?limit=5`,
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          }
+        );
+        
+        if (albumTracksResponse.ok) {
+          const albumTracksData = await albumTracksResponse.json();
+          
+          // Obtener información detallada de las canciones (incluyendo popularidad)
+          const trackIds = albumTracksData.items.slice(0, 2).map((track: any) => track.id).join(',');
+          
+          if (trackIds) {
+            const tracksDetailResponse = await fetch(
+              `https://api.spotify.com/v1/tracks?ids=${trackIds}`,
+              {
+                headers: {
+                  'Authorization': `Bearer ${token}`
+                }
+              }
+            );
+            
+            if (tracksDetailResponse.ok) {
+              const tracksDetailData = await tracksDetailResponse.json();
+              tracks.push(...tracksDetailData.tracks);
+            }
+          }
+        }
+      } catch (error) {
+        console.warn(`Error getting tracks for album ${album.id}:`, error);
+      }
+    }
+
+    // Ordenar por popularidad y tomar el límite solicitado
+    const sortedTracks = tracks
+      .sort((a, b) => (b.popularity || 0) - (a.popularity || 0))
+      .slice(0, limit);
 
     const apiResponse: ApiResponse = {
       success: true,
-      data: tracks,
-      message: 'Nuevos lanzamientos obtenidos exitosamente'
+      data: sortedTracks,
+      message: 'Canciones populares obtenidas exitosamente'
     };
 
     return new Response(
@@ -68,12 +98,12 @@ export const GET: APIRoute = async ({ url }) => {
     );
 
   } catch (error) {
-    console.error('Error obteniendo nuevos lanzamientos:', error);
+    console.error('Error obteniendo canciones populares:', error);
     
     return new Response(
       JSON.stringify({
         success: false,
-        error: 'Error al obtener nuevos lanzamientos',
+        error: 'Error al obtener canciones populares',
         details: error instanceof Error ? error.message : 'Unknown error'
       } as ApiResponse),
       { status: 500, headers: { 'Content-Type': 'application/json' } }

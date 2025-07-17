@@ -224,6 +224,9 @@ import Layout from '../layouts/Layout.astro';
       </div>
     </div>
   </div>
+
+  <!-- Spotify Player Modal -->
+  <div id="spotify-player-container"></div>
 </Layout>
 
 <script>
@@ -232,8 +235,10 @@ import Layout from '../layouts/Layout.astro';
   let currentFilter: string = 'all';
 
   // Variable global para controlar el audio
-  let currentAudio: HTMLAudioElement | null = null;
-  let currentPlayButton: HTMLElement | null = null;
+
+  // Variables para el modal de Spotify Player
+  let spotifyPlayerModal: any = null;
+  let isPlayerModalOpen = false;
 
   // Elementos del DOM
   const welcomeContent = document.getElementById('welcome-content');
@@ -324,6 +329,7 @@ import Layout from '../layouts/Layout.astro';
       
       const imageUrl = track.album?.images?.[0]?.url || '';
       const gradientClass = getGradientClass(track.name);
+      const artistName = track.artists?.map((a: any) => a.name).join(', ') || 'Artista desconocido';
       
       trackElement.innerHTML = `
         <div class="aspect-square ${gradientClass} rounded-lg mb-4 flex items-center justify-center relative overflow-hidden">
@@ -331,7 +337,7 @@ import Layout from '../layouts/Layout.astro';
             <img src="${imageUrl}" alt="${track.name}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
             <div class="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-all duration-200"></div>
             <div class="absolute inset-0 flex items-center justify-center">
-              <button type="button" class="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 transform group-hover:scale-110 shadow-lg play-preview-btn" data-preview-url="${track.preview_url || ''}" ${track.preview_url ? '' : 'disabled'}>
+              <button type="button" class="w-12 h-12 bg-green-500 hover:bg-green-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 transform group-hover:scale-110 shadow-lg play-button" data-spotify-url="${track.external_urls?.spotify || '#'}" data-track-name="${track.name}" data-artist-name="${track.artists?.map((a: any) => a.name).join(', ')}" data-image-url="${imageUrl}">
                 <svg class="w-6 h-6 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M8 5v14l11-7z"/>
                 </svg>
@@ -339,7 +345,7 @@ import Layout from '../layouts/Layout.astro';
             </div>
           ` : `
             <div class="absolute inset-0 flex items-center justify-center">
-              <button type="button" class="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 transform group-hover:scale-110 shadow-lg play-preview-btn" data-preview-url="${track.preview_url || ''}" ${track.preview_url ? '' : 'disabled'}>
+              <button type="button" class="w-12 h-12 bg-green-500 hover:bg-green-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 transform group-hover:scale-110 shadow-lg play-button" data-spotify-url="${track.external_urls?.spotify || '#'}" data-track-name="${track.name}" data-artist-name="${track.artists?.map((a: any) => a.name).join(', ')}" data-image-url="${imageUrl}">
                 <svg class="w-6 h-6 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M8 5v14l11-7z"/>
                 </svg>
@@ -349,7 +355,7 @@ import Layout from '../layouts/Layout.astro';
           <div class="absolute top-2 right-2 favorite-button-container" data-spotify-id="${track.id}" data-type="track" data-name="${track.name}" data-image-url="${imageUrl}" data-external-url="${track.external_urls?.spotify || ''}"></div>
         </div>
         <h3 class="text-white font-semibold text-sm truncate">${track.name}</h3>
-        <p class="text-white/70 text-xs truncate">${track.artists?.map((a: any) => a.name).join(', ') || 'Artista desconocido'}</p>
+        <p class="text-white/70 text-xs truncate">${artistName}</p>
       `;
       
       container.appendChild(trackElement);
@@ -357,15 +363,23 @@ import Layout from '../layouts/Layout.astro';
       // Renderizar botón de favoritos
       renderFavoriteButton(trackElement.querySelector('.favorite-button-container'), track.id, 'track', track.name, imageUrl, track.external_urls?.spotify);
 
-      // Agregar funcionalidad de reproducción de preview
-      const playBtn = trackElement.querySelector('.play-preview-btn') as HTMLElement;
-      if (playBtn && track.preview_url) {
-        playBtn.addEventListener('click', (e) => {
+      // Agregar event listener al botón de reproducción
+      const playButton = trackElement.querySelector('.play-button') as HTMLButtonElement;
+      if (playButton) {
+        playButton.addEventListener('click', (e) => {
+          e.preventDefault();
           e.stopPropagation();
-          console.log('Click en play-preview-btn', track.preview_url, playBtn);
-          handlePlayPreview(track.preview_url, playBtn);
+          const spotifyUrl = playButton.getAttribute('data-spotify-url');
+          const trackName = playButton.getAttribute('data-track-name');
+          const artistName = playButton.getAttribute('data-artist-name');
+          const imageUrl = playButton.getAttribute('data-image-url');
+          
+          if (spotifyUrl && trackName && artistName) {
+            openSpotifyPlayer(spotifyUrl, trackName, artistName, imageUrl || undefined);
+          }
         });
       }
+
     });
   }
 
@@ -570,13 +584,21 @@ import Layout from '../layouts/Layout.astro';
                 ${imageUrl ? `
                   <img src="${imageUrl}" alt="${album.name}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                   <div class="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-all duration-200"></div>
-                  <svg class="w-8 h-8 text-white relative z-10 opacity-0 group-hover:opacity-100 transition-all duration-200" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M8 5v14l11-7z"/>
-                  </svg>
+                  <div class="absolute inset-0 flex items-center justify-center">
+                    <a href="${album.external_urls?.spotify || '#'}" target="_blank" rel="noopener noreferrer" class="w-8 h-8 bg-green-500 hover:bg-green-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 transform group-hover:scale-110 shadow-lg">
+                      <svg class="w-4 h-4 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z"/>
+                      </svg>
+                    </a>
+                  </div>
                 ` : `
-                  <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M8 5v14l11-7z"/>
-                  </svg>
+                  <div class="absolute inset-0 flex items-center justify-center">
+                    <a href="${album.external_urls?.spotify || '#'}" target="_blank" rel="noopener noreferrer" class="w-8 h-8 bg-green-500 hover:bg-green-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 transform group-hover:scale-110 shadow-lg">
+                      <svg class="w-4 h-4 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z"/>
+                      </svg>
+                    </a>
+                  </div>
                 `}
                 <div class="absolute top-2 right-2 favorite-button-container" data-spotify-id="${album.id}" data-type="album" data-name="${album.name}" data-image-url="${imageUrl}" data-external-url="${album.external_urls?.spotify || ''}"></div>
               </div>
@@ -619,13 +641,21 @@ import Layout from '../layouts/Layout.astro';
                 ${imageUrl ? `
                   <img src="${imageUrl}" alt="${artist.name}" class="w-full h-full object-cover rounded-full" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                   <div class="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-all duration-200"></div>
-                  <svg class="w-6 h-6 text-white relative z-10 opacity-0 group-hover:opacity-100 transition-all duration-200" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M8 5v14l11-7z"/>
-                  </svg>
+                  <div class="absolute inset-0 flex items-center justify-center">
+                    <a href="${artist.external_urls?.spotify || '#'}" target="_blank" rel="noopener noreferrer" class="w-6 h-6 bg-green-500 hover:bg-green-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 transform group-hover:scale-110 shadow-lg">
+                      <svg class="w-3 h-3 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z"/>
+                      </svg>
+                    </a>
+                  </div>
                 ` : `
-                  <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M8 5v14l11-7z"/>
-                  </svg>
+                  <div class="absolute inset-0 flex items-center justify-center">
+                    <a href="${artist.external_urls?.spotify || '#'}" target="_blank" rel="noopener noreferrer" class="w-6 h-6 bg-green-500 hover:bg-green-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 transform group-hover:scale-110 shadow-lg">
+                      <svg class="w-3 h-3 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z"/>
+                      </svg>
+                    </a>
+                  </div>
                 `}
                 <div class="absolute top-1 right-1 favorite-button-container" data-spotify-id="${artist.id}" data-type="artist" data-name="${artist.name}" data-image-url="${imageUrl}" data-external-url="${artist.external_urls?.spotify || ''}"></div>
               </div>
@@ -872,7 +902,7 @@ import Layout from '../layouts/Layout.astro';
           ${imageUrl ? `
             <img src="${imageUrl}" alt="${track.name}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
             <div class="absolute inset-0 flex items-center justify-center">
-              <button type="button" class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 transform group-hover:scale-110 shadow-lg play-preview-btn" data-preview-url="${track.preview_url || ''}" ${track.preview_url ? '' : 'disabled'}>
+              <button type="button" class="w-8 h-8 bg-green-500 hover:bg-green-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 transform group-hover:scale-110 shadow-lg play-button" data-spotify-url="${track.external_urls?.spotify || '#'}" data-track-name="${track.name}" data-artist-name="${track.artists?.map((a: any) => a.name).join(', ')}" data-image-url="${imageUrl}">
                 <svg class="w-4 h-4 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M8 5v14l11-7z"/>
                 </svg>
@@ -880,7 +910,7 @@ import Layout from '../layouts/Layout.astro';
             </div>
           ` : `
             <div class="absolute inset-0 flex items-center justify-center">
-              <button type="button" class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 transform group-hover:scale-110 shadow-lg play-preview-btn" data-preview-url="${track.preview_url || ''}" ${track.preview_url ? '' : 'disabled'}>
+              <button type="button" class="w-8 h-8 bg-green-500 hover:bg-green-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 transform group-hover:scale-110 shadow-lg play-button" data-spotify-url="${track.external_urls?.spotify || '#'}" data-track-name="${track.name}" data-artist-name="${track.artists?.map((a: any) => a.name).join(', ')}" data-image-url="${imageUrl}">
                 <svg class="w-4 h-4 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M8 5v14l11-7z"/>
                 </svg>
@@ -903,13 +933,20 @@ import Layout from '../layouts/Layout.astro';
       // Renderizar botón de favoritos
       renderFavoriteButton(trackElement.querySelector('.favorite-button-container'), track.id, 'track', track.name, imageUrl, track.external_urls?.spotify);
 
-      // Cambia el círculo de play para que sea un botón y si hay preview_url, lo use
-      const playBtn = trackElement.querySelector('.play-preview-btn') as HTMLElement;
-      if (playBtn && track.preview_url) {
-        playBtn.addEventListener('click', (e) => {
+      // Agregar event listener al botón de reproducción
+      const playButton = trackElement.querySelector('.play-button') as HTMLButtonElement;
+      if (playButton) {
+        playButton.addEventListener('click', (e) => {
+          e.preventDefault();
           e.stopPropagation();
-          console.log('Click en play-preview-btn', track.preview_url, playBtn);
-          handlePlayPreview(track.preview_url, playBtn);
+          const spotifyUrl = playButton.getAttribute('data-spotify-url');
+          const trackName = playButton.getAttribute('data-track-name');
+          const artistName = playButton.getAttribute('data-artist-name');
+          const imageUrl = playButton.getAttribute('data-image-url');
+          
+          if (spotifyUrl && trackName && artistName) {
+            openSpotifyPlayer(spotifyUrl, trackName, artistName, imageUrl || undefined);
+          }
         });
       }
     });
@@ -1110,19 +1147,19 @@ import Layout from '../layouts/Layout.astro';
           ${imageUrl ? `
             <img src="${imageUrl}" alt="${track.name}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
             <div class="absolute inset-0 flex items-center justify-center">
-              <button type="button" class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 transform group-hover:scale-110 shadow-lg play-preview-btn" data-preview-url="${track.preview_url || ''}" ${track.preview_url ? '' : 'disabled'}>
+              <a href="${track.external_urls?.spotify || '#'}" target="_blank" rel="noopener noreferrer" class="w-8 h-8 bg-green-500 hover:bg-green-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 transform group-hover:scale-110 shadow-lg">
                 <svg class="w-4 h-4 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M8 5v14l11-7z"/>
                 </svg>
-              </button>
+              </a>
             </div>
           ` : `
             <div class="absolute inset-0 flex items-center justify-center">
-              <button type="button" class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 transform group-hover:scale-110 shadow-lg play-preview-btn" data-preview-url="${track.preview_url || ''}" ${track.preview_url ? '' : 'disabled'}>
+              <a href="${track.external_urls?.spotify || '#'}" target="_blank" rel="noopener noreferrer" class="w-8 h-8 bg-green-500 hover:bg-green-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 transform group-hover:scale-110 shadow-lg">
                 <svg class="w-4 h-4 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M8 5v14l11-7z"/>
                 </svg>
-              </button>
+              </a>
             </div>
           `}
         </div>
@@ -1141,13 +1178,20 @@ import Layout from '../layouts/Layout.astro';
       // Renderizar botón de favoritos
       renderFavoriteButton(trackElement.querySelector('.favorite-button-container'), track.id, 'track', track.name, imageUrl, track.external_urls?.spotify);
 
-      // Cambia el círculo de play para que sea un botón y si hay preview_url, lo use
-      const playBtn = trackElement.querySelector('.play-preview-btn') as HTMLElement;
-      if (playBtn && track.preview_url) {
-        playBtn.addEventListener('click', (e) => {
+      // Agregar event listener al botón de reproducción
+      const playButton = trackElement.querySelector('.play-button') as HTMLButtonElement;
+      if (playButton) {
+        playButton.addEventListener('click', (e) => {
+          e.preventDefault();
           e.stopPropagation();
-          console.log('Click en play-preview-btn', track.preview_url, playBtn);
-          handlePlayPreview(track.preview_url, playBtn);
+          const spotifyUrl = playButton.getAttribute('data-spotify-url');
+          const trackName = playButton.getAttribute('data-track-name');
+          const artistName = playButton.getAttribute('data-artist-name');
+          const imageUrl = playButton.getAttribute('data-image-url');
+          
+          if (spotifyUrl && trackName && artistName) {
+            openSpotifyPlayer(spotifyUrl, trackName, artistName, imageUrl || undefined);
+          }
         });
       }
     });
@@ -1170,13 +1214,21 @@ import Layout from '../layouts/Layout.astro';
           ${imageUrl ? `
             <img src="${imageUrl}" alt="${album.name}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
             <div class="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-all duration-200"></div>
-            <svg class="w-12 h-12 text-white relative z-10 opacity-0 group-hover:opacity-100 transition-all duration-200" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M8 5v14l11-7z"/>
-            </svg>
+            <div class="absolute inset-0 flex items-center justify-center">
+              <a href="${album.external_urls?.spotify || '#'}" target="_blank" rel="noopener noreferrer" class="w-12 h-12 bg-green-500 hover:bg-green-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 transform group-hover:scale-110 shadow-lg">
+                <svg class="w-6 h-6 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+              </a>
+            </div>
           ` : `
-            <svg class="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M8 5v14l11-7z"/>
-            </svg>
+            <div class="absolute inset-0 flex items-center justify-center">
+              <a href="${album.external_urls?.spotify || '#'}" target="_blank" rel="noopener noreferrer" class="w-12 h-12 bg-green-500 hover:bg-green-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 transform group-hover:scale-110 shadow-lg">
+                <svg class="w-6 h-6 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+              </a>
+            </div>
           `}
           <div class="absolute top-2 right-2 favorite-button-container" data-spotify-id="${album.id}" data-type="album" data-name="${album.name}" data-image-url="${imageUrl}" data-external-url="${album.external_urls?.spotify || ''}"></div>
         </div>
@@ -1208,13 +1260,21 @@ import Layout from '../layouts/Layout.astro';
           ${imageUrl ? `
             <img src="${imageUrl}" alt="${artist.name}" class="w-full h-full object-cover rounded-full" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
             <div class="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-all duration-200"></div>
-            <svg class="w-8 h-8 text-white relative z-10 opacity-0 group-hover:opacity-100 transition-all duration-200" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M8 5v14l11-7z"/>
-            </svg>
+            <div class="absolute inset-0 flex items-center justify-center">
+              <a href="${artist.external_urls?.spotify || '#'}" target="_blank" rel="noopener noreferrer" class="w-8 h-8 bg-green-500 hover:bg-green-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 transform group-hover:scale-110 shadow-lg">
+                <svg class="w-4 h-4 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+              </a>
+            </div>
           ` : `
-            <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M8 5v14l11-7z"/>
-            </svg>
+            <div class="absolute inset-0 flex items-center justify-center">
+              <a href="${artist.external_urls?.spotify || '#'}" target="_blank" rel="noopener noreferrer" class="w-8 h-8 bg-green-500 hover:bg-green-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 transform group-hover:scale-110 shadow-lg">
+                <svg class="w-4 h-4 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+              </a>
+            </div>
           `}
           <div class="absolute top-2 right-2 favorite-button-container" data-spotify-id="${artist.id}" data-type="artist" data-name="${artist.name}" data-image-url="${imageUrl}" data-external-url="${artist.external_urls?.spotify || ''}"></div>
         </div>
@@ -1247,6 +1307,12 @@ import Layout from '../layouts/Layout.astro';
 
   window.addEventListener('filterChanged', (event: any) => {
     changeFilter(event.detail.filter);
+  });
+
+  // Escuchar evento del sidebar para abrir reproductor
+  window.addEventListener('openSpotifyPlayer', (event: any) => {
+    const { spotifyUrl, trackName, artistName, imageUrl } = event.detail;
+    openSpotifyPlayer(spotifyUrl, trackName, artistName, imageUrl);
   });
 
   // Hacer que los elementos de recomendación sean clickeables
@@ -1285,36 +1351,120 @@ import Layout from '../layouts/Layout.astro';
     });
   });
 
-  function handlePlayPreview(previewUrl: string, playBtn: HTMLElement) {
-    // Si ya hay un audio sonando, pausarlo
-    if (currentAudio) {
-      currentAudio.pause();
-      if (currentPlayButton) {
-        currentPlayButton.innerHTML = `<svg class="w-4 h-4 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>`;
-      }
-      if (currentAudio.src === previewUrl) {
-        currentAudio = null;
-        currentPlayButton = null;
-        return; // Si es el mismo, solo pausar
-      }
-    }
-    // Crear nuevo audio
-    currentAudio = new Audio(previewUrl);
-    currentAudio.play();
-    currentPlayButton = playBtn;
-    // Cambiar a ícono de pausa
-    playBtn.innerHTML = `<svg class="w-4 h-4 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg>`;
-    // Cuando termine, volver a play
-    currentAudio.onended = () => {
-      playBtn.innerHTML = `<svg class="w-4 h-4 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>`;
-      currentAudio = null;
-      currentPlayButton = null;
-    };
-    // Si se pausa manualmente
-    currentAudio.onpause = () => {
-      playBtn.innerHTML = `<svg class="w-4 h-4 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>`;
-      currentAudio = null;
-      currentPlayButton = null;
-    };
+  // Funciones para el modal de Spotify Player
+  async function openSpotifyPlayer(spotifyUrl: string, trackName: string, artistName: string, imageUrl?: string) {
+    if (isPlayerModalOpen) return;
+    
+    const container = document.getElementById('spotify-player-container');
+    if (!container) return;
+
+    // Crear el modal usando Solid.js
+    const { render } = await import('solid-js/web');
+    const SpotifyPlayer = (await import('../components/SpotifyPlayer')).default;
+    
+    // Limpiar contenedor
+    container.innerHTML = '';
+    
+    // Renderizar el componente
+    spotifyPlayerModal = render(() => 
+      SpotifyPlayer({
+        isOpen: true,
+        onClose: closeSpotifyPlayer,
+        spotifyUrl,
+        trackName,
+        artistName,
+        imageUrl
+      }), 
+      container
+    );
+    
+    isPlayerModalOpen = true;
   }
+
+  function closeSpotifyPlayer() {
+    if (!isPlayerModalOpen || !spotifyPlayerModal) return;
+    
+    const container = document.getElementById('spotify-player-container');
+    if (container) {
+      container.innerHTML = '';
+    }
+    
+    isPlayerModalOpen = false;
+    spotifyPlayerModal = null;
+  }
+
+  // Función para convertir enlaces a botones de reproducción
+  function convertLinksToPlayerButtons() {
+    // Convertir todos los enlaces de Spotify a botones de reproducción
+    document.querySelectorAll('a[href*="spotify.com"]').forEach(link => {
+      const href = link.getAttribute('href');
+      if (href && href.includes('spotify.com/track/')) {
+        // Obtener información del track desde el elemento padre
+        const trackElement = link.closest('[data-spotify-id]');
+        if (trackElement) {
+          const trackId = trackElement.getAttribute('data-spotify-id');
+          const trackName = trackElement.getAttribute('data-name') || 'Canción';
+          const imageUrl = trackElement.getAttribute('data-image-url') || '';
+          const artistName = trackElement.querySelector('p')?.textContent || 'Artista';
+          
+          // Convertir el enlace a un botón
+          link.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            openSpotifyPlayer(href, trackName, artistName, imageUrl);
+          });
+        }
+      }
+    });
+  }
+
+  // Inicializar botones de reproducción cuando se cargue el DOM
+  document.addEventListener('DOMContentLoaded', () => {
+    // Cargar recomendaciones al cargar la página
+    loadRecommendations();
+
+    // Configurar filtros en la sección de resultados
+    const filterButtons = document.querySelectorAll('[data-filter]');
+    filterButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const filterId = btn.getAttribute('data-filter');
+        if (filterId) {
+          // Actualizar estado visual de los filtros
+          filterButtons.forEach(b => {
+            b.classList.remove('bg-white', 'text-black', 'shadow-lg');
+            b.classList.add('bg-gray-800/50', 'text-gray-300');
+          });
+          btn.classList.remove('bg-gray-800/50', 'text-gray-300');
+          btn.classList.add('bg-white', 'text-black', 'shadow-lg');
+          
+          // Actualizar el filtro actual
+          currentFilter = filterId;
+          
+          // Si hay resultados, filtrarlos
+          if (currentSearchResults) {
+            showSearchResults(currentSearchResults);
+          }
+          
+          // Emitir evento para que el header sepa qué filtro está activo
+          window.dispatchEvent(new CustomEvent('filterChanged', { 
+            detail: { filter: filterId } 
+          }));
+        }
+      });
+    });
+
+    // Convertir enlaces a botones de reproducción después de cargar contenido
+    setTimeout(convertLinksToPlayerButtons, 1000);
+  });
+
+  // Observar cambios en el DOM para convertir nuevos enlaces
+  const observer = new MutationObserver(() => {
+    convertLinksToPlayerButtons();
+  });
+
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true
+  });
+
 </script>
