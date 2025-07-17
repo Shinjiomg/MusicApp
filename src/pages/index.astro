@@ -360,8 +360,8 @@ import Layout from '../layouts/Layout.astro';
       
       container.appendChild(trackElement);
       
-      // Renderizar botón de favoritos
-      renderFavoriteButton(trackElement.querySelector('.favorite-button-container'), track.id, 'track', track.name, imageUrl, track.external_urls?.spotify);
+      // Renderizar botones de acción
+      renderActionButtons(trackElement.querySelector('.favorite-button-container'), track.id, 'track', track.name, imageUrl, track.external_urls?.spotify);
 
       // Agregar event listener al botón de reproducción
       const playButton = trackElement.querySelector('.play-button') as HTMLButtonElement;
@@ -416,8 +416,8 @@ import Layout from '../layouts/Layout.astro';
       
       container.appendChild(albumElement);
       
-      // Renderizar botón de favoritos
-      renderFavoriteButton(albumElement.querySelector('.favorite-button-container'), album.id, 'album', album.name, imageUrl, album.external_urls?.spotify);
+      // Renderizar botones de acción
+      renderActionButtons(albumElement.querySelector('.favorite-button-container'), album.id, 'album', album.name, imageUrl, album.external_urls?.spotify);
     });
   }
 
@@ -607,8 +607,8 @@ import Layout from '../layouts/Layout.astro';
             `;
             albumsGridSidebar.appendChild(albumElement);
             
-            // Renderizar botón de favoritos
-            renderFavoriteButton(albumElement.querySelector('.favorite-button-container'), album.id, 'album', album.name, imageUrl, album.external_urls?.spotify);
+            // Renderizar botones de acción
+            renderActionButtons(albumElement.querySelector('.favorite-button-container'), album.id, 'album', album.name, imageUrl, album.external_urls?.spotify);
           });
         }
       }
@@ -664,8 +664,8 @@ import Layout from '../layouts/Layout.astro';
             `;
             artistsGridSidebar.appendChild(artistElement);
             
-            // Renderizar botón de favoritos
-            renderFavoriteButton(artistElement.querySelector('.favorite-button-container'), artist.id, 'artist', artist.name, imageUrl, artist.external_urls?.spotify);
+            // Renderizar botones de acción
+            renderActionButtons(artistElement.querySelector('.favorite-button-container'), artist.id, 'artist', artist.name, imageUrl, artist.external_urls?.spotify);
           });
         }
       }
@@ -930,8 +930,8 @@ import Layout from '../layouts/Layout.astro';
       
       tracksList.appendChild(trackElement);
       
-      // Renderizar botón de favoritos
-      renderFavoriteButton(trackElement.querySelector('.favorite-button-container'), track.id, 'track', track.name, imageUrl, track.external_urls?.spotify);
+      // Renderizar botones de acción
+      renderActionButtons(trackElement.querySelector('.favorite-button-container'), track.id, 'track', track.name, imageUrl, track.external_urls?.spotify);
 
       // Agregar event listener al botón de reproducción
       const playButton = trackElement.querySelector('.play-button') as HTMLButtonElement;
@@ -960,44 +960,59 @@ import Layout from '../layouts/Layout.astro';
   }
 
   // Función para renderizar botón de favoritos
-  function renderFavoriteButton(container: Element | null, spotifyId: string, type: 'track' | 'album' | 'artist', name: string, imageUrl?: string, externalUrl?: string) {
+  function renderActionButtons(container: Element | null, spotifyId: string, type: 'track' | 'album' | 'artist', name: string, imageUrl?: string, externalUrl?: string) {
     if (!container) return;
     
-    // Crear el botón de favoritos con animaciones mejoradas
-    const button = document.createElement('div');
-    button.innerHTML = `
-      <button 
-        class="w-8 h-8 rounded-full bg-black/60 backdrop-blur-sm border border-white/30 flex items-center justify-center transition-all duration-300 hover:scale-125 hover:bg-green-500/20 hover:border-green-400 group favorite-btn shadow-lg hover:shadow-green-500/25"
-        data-spotify-id="${spotifyId}"
-        data-type="${type}"
-        data-name="${name}"
-        data-image-url="${imageUrl || ''}"
-        data-external-url="${externalUrl || ''}"
-        title="Agregar a favoritos"
-      >
-        <svg class="w-5 h-5 text-white/80 group-hover:text-white transition-all duration-300 transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-        </svg>
-      </button>
+    // Crear contenedor para los botones
+    const buttonsContainer = document.createElement('div');
+    buttonsContainer.className = 'flex items-center space-x-2';
+    
+    // Botón de favoritos
+    const favoriteButton = document.createElement('button');
+    favoriteButton.className = 'w-8 h-8 rounded-full bg-black/60 backdrop-blur-sm border border-white/30 flex items-center justify-center transition-all duration-300 hover:scale-125 hover:bg-green-500/20 hover:border-green-400 group favorite-btn shadow-lg hover:shadow-green-500/25';
+    favoriteButton.setAttribute('data-spotify-id', spotifyId);
+    favoriteButton.setAttribute('data-type', type);
+    favoriteButton.setAttribute('data-name', name);
+    favoriteButton.setAttribute('data-image-url', imageUrl || '');
+    favoriteButton.setAttribute('data-external-url', externalUrl || '');
+    favoriteButton.title = 'Agregar a favoritos';
+    
+    favoriteButton.innerHTML = `
+      <svg class="w-5 h-5 text-white/80 group-hover:text-white transition-all duration-300 transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+      </svg>
     `;
     
-    container.appendChild(button);
+    // Botón de compartir
+    const shareButton = document.createElement('button');
+    shareButton.className = 'w-8 h-8 rounded-full bg-black/60 backdrop-blur-sm border border-white/30 flex items-center justify-center transition-all duration-300 hover:scale-125 hover:bg-blue-500/20 hover:border-blue-400 group share-btn shadow-lg hover:shadow-blue-500/25';
+    shareButton.title = 'Compartir';
     
-    // Agregar event listener para el botón
-    const favoriteBtn = button.querySelector('.favorite-btn') as HTMLButtonElement;
-    if (favoriteBtn) {
-      favoriteBtn.addEventListener('click', async (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        
-
-        
-        await toggleFavorite(favoriteBtn);
-      });
-      
-      // Verificar estado inicial de favoritos
-      checkInitialFavoriteStatus(favoriteBtn);
-    }
+    shareButton.innerHTML = `
+      <svg class="w-5 h-5 text-white/80 group-hover:text-white transition-all duration-300 transform group-hover:scale-110" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"/>
+      </svg>
+    `;
+    
+    buttonsContainer.appendChild(favoriteButton);
+    buttonsContainer.appendChild(shareButton);
+    container.appendChild(buttonsContainer);
+    
+    // Event listeners
+    favoriteButton.addEventListener('click', async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      await toggleFavorite(favoriteButton);
+    });
+    
+    shareButton.addEventListener('click', async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      await shareItem(name, externalUrl || '');
+    });
+    
+    // Verificar estado inicial de favoritos
+    checkInitialFavoriteStatus(favoriteButton);
   }
 
   // Función para verificar el estado inicial de favoritos
@@ -1040,6 +1055,56 @@ import Layout from '../layouts/Layout.astro';
     } catch (error) {
       console.error('Error checking initial favorite status:', error);
     }
+  }
+
+  // Función para compartir elemento
+  async function shareItem(name: string, url: string) {
+    const shareData = {
+      title: name,
+      text: `Mira "${name}" en Spotify`,
+      url: url
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        // Fallback: copiar al portapapeles
+        await navigator.clipboard.writeText(`${shareData.text}\n${shareData.url}`);
+        showShareNotification();
+      }
+    } catch (error) {
+      console.error('Error sharing:', error);
+      // Fallback: copiar al portapapeles
+      try {
+        await navigator.clipboard.writeText(`${shareData.text}\n${shareData.url}`);
+        showShareNotification();
+      } catch (clipboardError) {
+        console.error('Error copying to clipboard:', clipboardError);
+      }
+    }
+  }
+
+  // Función para mostrar notificación de compartir
+  function showShareNotification() {
+    // Crear notificación temporal
+    const notification = document.createElement('div');
+    notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 flex items-center space-x-2';
+    notification.innerHTML = `
+      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <span>¡Enlace copiado!</span>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Remover después de 2 segundos
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.parentNode.removeChild(notification);
+      }
+    }, 2000);
   }
 
   // Función para alternar favoritos
@@ -1175,8 +1240,8 @@ import Layout from '../layouts/Layout.astro';
       
       tracksListFull.appendChild(trackElement);
       
-      // Renderizar botón de favoritos
-      renderFavoriteButton(trackElement.querySelector('.favorite-button-container'), track.id, 'track', track.name, imageUrl, track.external_urls?.spotify);
+      // Renderizar botones de acción
+      renderActionButtons(trackElement.querySelector('.favorite-button-container'), track.id, 'track', track.name, imageUrl, track.external_urls?.spotify);
 
       // Agregar event listener al botón de reproducción
       const playButton = trackElement.querySelector('.play-button') as HTMLButtonElement;
@@ -1238,8 +1303,8 @@ import Layout from '../layouts/Layout.astro';
       `;
       albumsGridFull.appendChild(albumElement);
       
-      // Renderizar botón de favoritos
-      renderFavoriteButton(albumElement.querySelector('.favorite-button-container'), album.id, 'album', album.name, imageUrl, album.external_urls?.spotify);
+      // Renderizar botones de acción
+      renderActionButtons(albumElement.querySelector('.favorite-button-container'), album.id, 'album', album.name, imageUrl, album.external_urls?.spotify);
     });
   }
 
@@ -1283,8 +1348,8 @@ import Layout from '../layouts/Layout.astro';
       `;
       artistsGridFull.appendChild(artistElement);
       
-      // Renderizar botón de favoritos
-      renderFavoriteButton(artistElement.querySelector('.favorite-button-container'), artist.id, 'artist', artist.name, imageUrl, artist.external_urls?.spotify);
+      // Renderizar botones de acción
+      renderActionButtons(artistElement.querySelector('.favorite-button-container'), artist.id, 'artist', artist.name, imageUrl, artist.external_urls?.spotify);
     });
   }
 
@@ -1360,14 +1425,14 @@ import Layout from '../layouts/Layout.astro';
 
     // Crear el modal usando Solid.js
     const { render } = await import('solid-js/web');
-    const SpotifyPlayer = (await import('../components/SpotifyPlayer')).default;
+    const CustomPlayer = (await import('../components/CustomPlayer')).default;
     
     // Limpiar contenedor
     container.innerHTML = '';
     
     // Renderizar el componente
     spotifyPlayerModal = render(() => 
-      SpotifyPlayer({
+      CustomPlayer({
         isOpen: true,
         onClose: closeSpotifyPlayer,
         spotifyUrl,

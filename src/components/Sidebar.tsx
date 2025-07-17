@@ -81,6 +81,54 @@ export default function Sidebar(props: SidebarProps) {
     return favorites().filter(fav => fav.type === dbType);
   };
 
+  const shareFavorite = async (favorite: any) => {
+    const shareData = {
+      title: favorite.name,
+      text: `Mira "${favorite.name}" en Spotify`,
+      url: favorite.external_url || ''
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        // Fallback: copiar al portapapeles
+        await navigator.clipboard.writeText(`${shareData.text}\n${shareData.url}`);
+        showShareNotification();
+      }
+    } catch (error) {
+      console.error('Error sharing:', error);
+      // Fallback: copiar al portapapeles
+      try {
+        await navigator.clipboard.writeText(`${shareData.text}\n${shareData.url}`);
+        showShareNotification();
+      } catch (clipboardError) {
+        console.error('Error copying to clipboard:', clipboardError);
+      }
+    }
+  };
+
+  const showShareNotification = () => {
+    // Crear notificación temporal
+    const notification = document.createElement('div');
+    notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 flex items-center space-x-2';
+    notification.innerHTML = `
+      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <span>¡Enlace copiado!</span>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Remover después de 2 segundos
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.parentNode.removeChild(notification);
+      }
+    }, 2000);
+  };
+
   const removeFavorite = async (favoriteId: number) => {
     try {
       // Buscar el favorito para obtener el spotify_id
@@ -247,19 +295,34 @@ export default function Sidebar(props: SidebarProps) {
                                favorite.type === 'artist' ? 'Artista' : ''}
                             </p>
                           </div>
-                          <button 
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              removeFavorite(favorite.id);
-                            }}
-                            class="w-6 h-6 rounded-full bg-black/50 backdrop-blur-sm border border-white/20 flex items-center justify-center transition-all duration-200 hover:scale-110 group/btn"
-                            title="Quitar de favoritos"
-                          >
-                            <svg class="w-3 h-3 text-green-400 group-hover/btn:text-green-300" fill="currentColor" viewBox="0 0 24 24">
-                              <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                            </svg>
-                          </button>
+                          <div class="flex items-center space-x-2">
+                            <button 
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                shareFavorite(favorite);
+                              }}
+                              class="w-6 h-6 rounded-full bg-black/50 backdrop-blur-sm border border-white/20 flex items-center justify-center transition-all duration-200 hover:scale-110 group/share"
+                              title="Compartir"
+                            >
+                              <svg class="w-3 h-3 text-blue-400 group-hover/share:text-blue-300" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"/>
+                              </svg>
+                            </button>
+                            <button 
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                removeFavorite(favorite.id);
+                              }}
+                              class="w-6 h-6 rounded-full bg-black/50 backdrop-blur-sm border border-white/20 flex items-center justify-center transition-all duration-200 hover:scale-110 group/btn"
+                              title="Quitar de favoritos"
+                            >
+                              <svg class="w-3 h-3 text-green-400 group-hover/btn:text-green-300" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                              </svg>
+                            </button>
+                          </div>
                         </div>
                       </div>
                     ))}
