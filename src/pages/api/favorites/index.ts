@@ -33,7 +33,7 @@ export const GET: APIRoute = async ({ request }) => {
     // Obtener favoritos del usuario
     const favorites = await db.all(
       'SELECT * FROM user_favorites WHERE user_id = ? ORDER BY created_at DESC',
-      [user.id]
+      [user.userId]
     );
 
     return new Response(
@@ -59,8 +59,12 @@ export const GET: APIRoute = async ({ request }) => {
 
 export const POST: APIRoute = async ({ request }) => {
   try {
+    console.log('POST /api/favorites - Iniciando...');
+    
     // Verificar autenticación
     const token = request.headers.get('cookie')?.match(/token=([^;]+)/)?.[1];
+    console.log('Token encontrado:', !!token);
+    
     if (!token) {
       return new Response(
         JSON.stringify({
@@ -72,6 +76,8 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     const user = verifyToken(token);
+    console.log('Usuario verificado:', user ? { userId: user.userId, email: user.email } : null);
+    
     if (!user) {
       return new Response(
         JSON.stringify({
@@ -84,9 +90,11 @@ export const POST: APIRoute = async ({ request }) => {
 
     const body = await request.json();
     const { spotify_id, type, name, image_url, external_url } = body;
+    console.log('Datos recibidos:', { spotify_id, type, name, image_url: !!image_url, external_url: !!external_url });
 
     // Validaciones
     if (!spotify_id || !type || !name) {
+      console.log('Validación fallida: faltan campos requeridos');
       return new Response(
         JSON.stringify({
           success: false,
@@ -97,6 +105,7 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     if (!['track', 'album', 'artist'].includes(type)) {
+      console.log('Validación fallida: tipo inválido:', type);
       return new Response(
         JSON.stringify({
           success: false,
@@ -107,12 +116,14 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     const db = await getDatabase();
+    console.log('Base de datos conectada');
     
     // Verificar si ya existe
     const existing = await db.get(
       'SELECT id FROM user_favorites WHERE user_id = ? AND spotify_id = ?',
-      [user.id, spotify_id]
+      [user.userId, spotify_id]
     );
+    console.log('Verificación de existencia:', !!existing);
 
     if (existing) {
       return new Response(
@@ -125,10 +136,12 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     // Agregar a favoritos
+    console.log('Insertando favorito...');
     const result = await db.run(
       'INSERT INTO user_favorites (user_id, spotify_id, type, name, image_url, external_url) VALUES (?, ?, ?, ?, ?, ?)',
-      [user.id, spotify_id, type, name, image_url, external_url]
+      [user.userId, spotify_id, type, name, image_url, external_url]
     );
+    console.log('Favorito insertado, ID:', result.lastID);
 
     // Obtener el favorito creado
     const newFavorite = await db.get(

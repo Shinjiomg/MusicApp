@@ -11,7 +11,7 @@ export const DELETE: APIRoute = async ({ request, params }) => {
       return new Response(
         JSON.stringify({
           success: false,
-          error: 'ID del favorito es requerido'
+          error: 'Spotify ID del favorito es requerido'
         } as ApiResponse),
         { status: 400, headers: { 'Content-Type': 'application/json' } }
       );
@@ -42,10 +42,10 @@ export const DELETE: APIRoute = async ({ request, params }) => {
 
     const db = await getDatabase();
     
-    // Verificar que el favorito pertenece al usuario
+    // Verificar que el favorito pertenece al usuario usando spotify_id
     const favorite = await db.get(
-      'SELECT * FROM user_favorites WHERE id = ? AND user_id = ?',
-      [id, user.id]
+      'SELECT * FROM user_favorites WHERE spotify_id = ? AND user_id = ?',
+      [id, user.userId]
     );
 
     if (!favorite) {
@@ -58,10 +58,10 @@ export const DELETE: APIRoute = async ({ request, params }) => {
       );
     }
 
-    // Eliminar el favorito
+    // Eliminar el favorito usando spotify_id
     await db.run(
-      'DELETE FROM user_favorites WHERE id = ? AND user_id = ?',
-      [id, user.id]
+      'DELETE FROM user_favorites WHERE spotify_id = ? AND user_id = ?',
+      [id, user.userId]
     );
 
     return new Response(
