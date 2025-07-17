@@ -199,6 +199,9 @@ CREATE TABLE user_favorites (
 - `GET /api/debug/database` - Información de la base de datos
 - `GET /api/debug/env` - Variables de entorno
 
+## 📹 Video de Explicación
+- https://drive.google.com/file/d/1rBL8m7zwzZ7IW-k8sxsdpw8FYlp_2cIA/view?usp=sharing
+
 ## 🚀 Despliegue
 
 ### **Despliegue en Cloudflare Pages**
