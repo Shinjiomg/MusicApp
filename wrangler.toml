@@ -1,6 +1,9 @@
 name = "castor-prueba-tecnica"
 compatibility_date = "2024-01-01"
 
+[vars]
+NODE_ENV = "production"
+
 [env.production]
 name = "castor-prueba-tecnica"
 
