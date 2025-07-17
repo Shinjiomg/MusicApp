@@ -2,6 +2,9 @@ import type { APIRoute } from 'astro';
 import jwt from 'jsonwebtoken';
 import { getDatabase } from '../../../db/database';
 
+// Esta ruta debe ser server-rendered, no prerenderizada
+export const prerender = false;
+
 export const GET: APIRoute = async ({ request, cookies }) => {
   try {
     const token = cookies.get('token')?.value;

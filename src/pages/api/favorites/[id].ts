@@ -3,6 +3,9 @@ import { getDatabase } from '../../../db/database';
 import { verifyToken } from '../../../utils/auth';
 import type { ApiResponse } from '../../../types';
 
+// Esta ruta debe ser server-rendered, no prerenderizada
+export const prerender = false;
+
 export const DELETE: APIRoute = async ({ request, params }) => {
   try {
     const { id } = params;

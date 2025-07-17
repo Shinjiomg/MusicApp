@@ -3,6 +3,9 @@ import { getDatabase } from '../../../db/database';
 import { verifyToken } from '../../../utils/auth';
 import type { ApiResponse, User } from '../../../types';
 
+// Esta ruta debe ser server-rendered, no prerenderizada
+export const prerender = false;
+
 export const GET: APIRoute = async ({ request }) => {
   try {
     // Extraer token de las cookies
