@@ -11,6 +11,20 @@ export default function Sidebar(props: SidebarProps) {
   const [favorites, setFavorites] = createSignal<any[]>([]);
   const [activeTab, setActiveTab] = createSignal<'tracks' | 'albums' | 'artists'>('tracks');
   const [isLoading, setIsLoading] = createSignal(false);
+  const [isOpen, setIsOpen] = createSignal(props.isOpen);
+
+  // Escuchar eventos del header para controlar el sidebar
+  createEffect(() => {
+    const handleSidebarToggle = (event: CustomEvent) => {
+      setIsOpen(event.detail.isOpen);
+    };
+
+    window.addEventListener('sidebarToggle', handleSidebarToggle as EventListener);
+    
+    return () => {
+      window.removeEventListener('sidebarToggle', handleSidebarToggle as EventListener);
+    };
+  });
 
   createEffect(() => {
     checkAuthStatus();
@@ -152,12 +166,41 @@ export default function Sidebar(props: SidebarProps) {
   };
 
   return (
-    <div class="fixed left-4 top-20 h-[calc(100vh-6rem)] bg-black/40 backdrop-blur-xl border border-white/20 rounded-2xl w-80 z-40 shadow-2xl overflow-hidden">
-      <div class="h-full flex flex-col w-full">
+    <>
+      <Show when={isOpen()}>
+        <div class="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 md:hidden" onClick={() => {
+          setIsOpen(false);
+          // Emitir evento para actualizar el estado del Header
+          window.dispatchEvent(new CustomEvent('sidebarToggle', { 
+            detail: { isOpen: false } 
+          }));
+        }}></div>
+      </Show>
+      <div class={`fixed top-20 h-[calc(100vh-6rem)] bg-black/90 backdrop-blur-xl border border-white/20 rounded-2xl z-50 shadow-2xl overflow-hidden transition-all duration-300 ${
+        isOpen() 
+          ? 'left-4 w-80 opacity-100 translate-x-0' 
+          : '-left-80 w-80 opacity-0 translate-x-0 md:left-4 md:opacity-100 md:translate-x-0'
+      } md:left-4 md:w-80 md:opacity-100 md:translate-x-0`}>
+        <div class="h-full flex flex-col w-full">
         {/* Header del sidebar */}
-        <div class="p-6 w-full">
-          <div class="flex items-center justify-between mb-6 w-full">
-            <h2 class="text-white font-bold text-xl">Tu Biblioteca</h2>
+        <div class="p-4 sm:p-6 w-full">
+          <div class="flex items-center justify-between mb-4 sm:mb-6 w-full">
+            <h2 class="text-white font-bold text-lg sm:text-xl">Tu Biblioteca</h2>
+            {/* Botón de cerrar solo en mobile */}
+            <button 
+              onClick={() => {
+                setIsOpen(false);
+                // Emitir evento para actualizar el estado del Header
+                window.dispatchEvent(new CustomEvent('sidebarToggle', { 
+                  detail: { isOpen: false } 
+                }));
+              }}
+              class="md:hidden w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors backdrop-blur-sm"
+            >
+              <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
           </div>
           
           <Show when={isLoggedIn()} fallback={
@@ -178,7 +221,7 @@ export default function Sidebar(props: SidebarProps) {
             </div>
           }>
             {/* Tabs para diferentes tipos de favoritos */}
-            <div class="flex space-x-2 mb-6 w-full">
+            <div class="flex space-x-1 sm:space-x-2 mb-4 sm:mb-6 w-full">
               {[
                 { id: 'tracks', label: 'Canciones', count: getFavoritesByType('tracks').length },
                 { id: 'albums', label: 'Álbumes', count: getFavoritesByType('albums').length },
@@ -186,13 +229,13 @@ export default function Sidebar(props: SidebarProps) {
               ].map((tab) => (
                 <button
                   onClick={() => setActiveTab(tab.id as any)}
-                  class={`flex-1 px-2 py-2.5 rounded-xl text-xs font-medium transition-all duration-200 cursor-pointer min-w-0 ${
+                  class={`flex-1 px-1 sm:px-2 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-xs font-medium transition-all duration-200 cursor-pointer min-w-0 ${
                     activeTab() === tab.id
-                      ? 'bg-white/20 text-white shadow-lg backdrop-blur-sm border border-white/20'
-                      : 'bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white border border-transparent'
+                      ? 'bg-white/30 text-white shadow-lg backdrop-blur-sm border border-white/30'
+                      : 'bg-white/10 text-gray-300 hover:bg-white/20 hover:text-white border border-transparent'
                   }`}
                 >
-                  <span class="truncate">{tab.label}</span>
+                  <span class="truncate text-xs">{tab.label}</span>
                   <span class="ml-1 text-xs opacity-70">({tab.count})</span>
                 </button>
               ))}
@@ -206,7 +249,7 @@ export default function Sidebar(props: SidebarProps) {
         {/* Contenido de favoritos */}
         <div class="flex-1 overflow-y-auto">
           <Show when={isLoggedIn()} fallback={<div></div>}>
-            <div class="p-6 w-full">
+            <div class="p-4 sm:p-6 w-full">
               <Show when={isLoading()} fallback={
                 <Show when={favorites().length > 0} fallback={
                   <div class="text-center py-8">
@@ -222,7 +265,7 @@ export default function Sidebar(props: SidebarProps) {
                   <div class="space-y-3">
                     {getFavoritesByType(activeTab()).map((favorite, index) => (
                       <div 
-                        class="bg-white/10 backdrop-blur-sm rounded-xl p-4 hover:bg-white/20 transition-all duration-200 cursor-pointer border border-white/10 shadow-lg w-full group animate-fade-in hover-lift"
+                        class="bg-white/20 backdrop-blur-sm rounded-lg sm:rounded-xl p-3 sm:p-4 hover:bg-white/30 transition-all duration-200 cursor-pointer border border-white/20 shadow-lg w-full group animate-fade-in hover-lift"
                         style={`animation-delay: ${index * 100}ms`}
                         onClick={() => {
                           if (favorite.external_url) {
@@ -243,8 +286,8 @@ export default function Sidebar(props: SidebarProps) {
                           }
                         }}
                       >
-                        <div class="flex items-center space-x-3 w-full">
-                          <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg flex items-center justify-center flex-shrink-0 shadow-lg relative overflow-hidden group">
+                        <div class="flex items-center space-x-2 sm:space-x-3 w-full">
+                          <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg flex items-center justify-center flex-shrink-0 shadow-lg relative overflow-hidden group">
                             {favorite.image_url ? (
                               <>
                                 <img 
@@ -288,24 +331,24 @@ export default function Sidebar(props: SidebarProps) {
                             </svg>
                           </div>
                           <div class="flex-1 min-w-0 overflow-hidden">
-                            <h4 class="text-white font-medium text-sm truncate w-full">{favorite.name}</h4>
+                            <h4 class="text-white font-medium text-xs sm:text-sm truncate w-full">{favorite.name}</h4>
                             <p class="text-white/70 text-xs truncate w-full">
                               {favorite.type === 'track' ? 'Canción' :
                                favorite.type === 'album' ? 'Álbum' :
                                favorite.type === 'artist' ? 'Artista' : ''}
                             </p>
                           </div>
-                          <div class="flex items-center space-x-2">
+                          <div class="flex items-center space-x-1 sm:space-x-2">
                             <button 
                               onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
                                 shareFavorite(favorite);
                               }}
-                              class="w-6 h-6 rounded-full bg-black/50 backdrop-blur-sm border border-white/20 flex items-center justify-center transition-all duration-200 hover:scale-110 group/share"
+                              class="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-black/50 backdrop-blur-sm border border-white/20 flex items-center justify-center transition-all duration-200 hover:scale-110 group/share"
                               title="Compartir"
                             >
-                              <svg class="w-3 h-3 text-blue-400 group-hover/share:text-blue-300" fill="currentColor" viewBox="0 0 24 24">
+                              <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3 text-blue-400 group-hover/share:text-blue-300" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"/>
                               </svg>
                             </button>
@@ -315,10 +358,10 @@ export default function Sidebar(props: SidebarProps) {
                                 e.stopPropagation();
                                 removeFavorite(favorite.id);
                               }}
-                              class="w-6 h-6 rounded-full bg-black/50 backdrop-blur-sm border border-white/20 flex items-center justify-center transition-all duration-200 hover:scale-110 group/btn"
+                              class="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-black/50 backdrop-blur-sm border border-white/20 flex items-center justify-center transition-all duration-200 hover:scale-110 group/btn"
                               title="Quitar de favoritos"
                             >
-                              <svg class="w-3 h-3 text-green-400 group-hover/btn:text-green-300" fill="currentColor" viewBox="0 0 24 24">
+                              <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3 text-green-400 group-hover/btn:text-green-300" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
                               </svg>
                             </button>
@@ -338,5 +381,6 @@ export default function Sidebar(props: SidebarProps) {
         </div>
       </div>
     </div>
+    </>
   );
 } 

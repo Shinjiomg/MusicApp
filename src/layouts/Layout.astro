@@ -23,7 +23,7 @@ const { title, description = "Aplicación de música con Spotify - Prueba Técni
   <body class="bg-black text-white h-screen flex flex-col overflow-hidden">
     <Header client:load />
 
-    <main class="flex-1 w-full pt-16 pl-[22rem] overflow-hidden bg-gradient-to-r from-black via-black to-gray-900/20">
+    <main class="flex-1 w-full pt-16 md:pl-[22rem] overflow-hidden bg-gradient-to-r from-black via-black to-gray-900/20">
       <slot />
     </main>
   </body>
@@ -54,5 +54,46 @@ const { title, description = "Aplicación de música con Spotify - Prueba Técni
   
   ::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.3);
+  }
+
+  /* Mejoras para mobile */
+  @media (max-width: 768px) {
+    /* Ocultar scrollbar en mobile para mejor UX */
+    ::-webkit-scrollbar {
+      width: 0;
+    }
+    
+    /* Mejorar el scroll en mobile */
+    .overflow-y-auto {
+      -webkit-overflow-scrolling: touch;
+    }
+    
+    /* Ajustar el padding del contenido principal en mobile */
+    main {
+      padding-left: 0 !important;
+    }
+  }
+
+  /* Animaciones para el sidebar */
+  .sidebar-enter {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  
+  .sidebar-enter-active {
+    transform: translateX(0);
+    opacity: 1;
+    transition: all 0.3s ease-out;
+  }
+  
+  .sidebar-exit {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  
+  .sidebar-exit-active {
+    transform: translateX(-100%);
+    opacity: 0;
+    transition: all 0.3s ease-in;
   }
 </style> 

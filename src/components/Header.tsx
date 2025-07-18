@@ -15,6 +15,26 @@ export default function Header() {
   const [isSearching, setIsSearching] = createSignal(false);
   const [searchTimeout, setSearchTimeout] = createSignal<NodeJS.Timeout | null>(null);
 
+  // Escuchar eventos del sidebar para sincronizar el estado
+  createEffect(() => {
+    const handleSidebarToggle = (event: CustomEvent) => {
+      setShowSidebar(event.detail.isOpen);
+    };
+
+    window.addEventListener('sidebarToggle', handleSidebarToggle as EventListener);
+    
+    return () => {
+      window.removeEventListener('sidebarToggle', handleSidebarToggle as EventListener);
+    };
+  });
+
+  // Emitir evento para controlar el sidebar
+  createEffect(() => {
+    window.dispatchEvent(new CustomEvent('sidebarToggle', { 
+      detail: { isOpen: showSidebar() } 
+    }));
+  });
+
   createEffect(() => {
     checkAuthStatus();
   });
@@ -145,16 +165,35 @@ export default function Header() {
 
   return (
     <header class="bg-black/95 backdrop-blur-sm border-b border-gray-800 fixed top-0 left-0 right-0 z-50 h-16">
-      <div class="w-full h-full px-4 md:px-6">
+      <div class="w-full h-full px-3 sm:px-4 md:px-6">
         <div class="flex items-center justify-between h-full">
           {/* Logo y navegación izquierda */}
-          <div class="flex items-center space-x-4 md:space-x-8">
-            <div class="flex items-center space-x-4 md:space-x-6">
+          <div class="flex items-center space-x-2 sm:space-x-4 md:space-x-8">
+                        <div class="flex items-center space-x-2 sm:space-x-4 md:space-x-6">
+              {/* Botón de hamburguesa para mobile - Solo para abrir sidebar */}
               <button 
+                onClick={() => setShowSidebar(!showSidebar())}
+                class={`md:hidden transition-colors cursor-pointer p-1 relative ${
+                  showSidebar() 
+                    ? 'text-green-400' 
+                    : 'text-white hover:text-green-400'
+                }`}
+                title="Tu Biblioteca"
+              >
+                <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+                {/* Indicador de favoritos */}
+                <Show when={isLoggedIn() && user()}>
+                  <div class="absolute -top-1 -right-1 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-green-500 rounded-full border-2 border-black"></div>
+                </Show>
+              </button>
+               
+                <button 
                 onClick={() => navigate('/')}
                 class="text-white hover:text-green-400 transition-colors cursor-pointer"
               >
-                <svg class="w-6 h-6 md:w-7 md:h-7" viewBox="0 0 24 24" fill="currentColor">
+                <svg class="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
                 </svg>
               </button>
@@ -172,7 +211,7 @@ export default function Header() {
           </div>
 
           {/* Barra de búsqueda central - Responsive */}
-          <div class="flex-1 max-w-xs sm:max-w-md md:max-w-2xl mx-2 md:mx-8">
+          <div class="flex-1 max-w-xs sm:max-w-md md:max-w-2xl mx-2 md:mx-4 lg:mx-8">
             <div class="relative">
                 <div class="absolute inset-y-0 left-0 pl-2 md:pl-3 flex items-center pointer-events-none">
                   <svg class="w-3 h-3 md:w-4 md:h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -221,7 +260,7 @@ export default function Header() {
             </div>
 
           {/* Navegación derecha */}
-          <div class="flex items-center space-x-2 md:space-x-4">
+          <div class="flex items-center space-x-1 sm:space-x-2 md:space-x-4">
             <Show when={!isLoggedIn()} fallback={
               <div class="relative">
                 <button
@@ -267,18 +306,21 @@ export default function Header() {
                 </Show>
               </div>
             }>
-              <button
-                onClick={() => navigate('/login')}
-                class="text-white hover:text-green-400 transition-colors font-medium text-xs md:text-sm cursor-pointer"
-              >
-                Iniciar sesión
-              </button>
-              <button
-                onClick={() => navigate('/register')}
-                class="bg-white text-black px-3 md:px-4 py-1 md:py-1.5 rounded-full font-medium hover:bg-gray-200 transition-colors text-xs md:text-sm cursor-pointer"
-              >
-                Registrarse
-              </button>
+              {/* Botones de auth optimizados para mobile */}
+              <div class="flex items-center space-x-1 sm:space-x-2">
+                <button
+                  onClick={() => navigate('/login')}
+                  class="text-white hover:text-green-400 transition-colors font-medium text-xs sm:text-sm cursor-pointer px-1 sm:px-2 py-1 rounded-md hover:bg-white/10"
+                >
+                  Iniciar sesión
+                </button>
+                <button
+                  onClick={() => navigate('/register')}
+                  class="bg-white text-black px-2 sm:px-3 md:px-4 py-1 md:py-1.5 rounded-full font-medium hover:bg-gray-200 transition-colors text-xs sm:text-sm cursor-pointer whitespace-nowrap"
+                >
+                  Registrarse
+                </button>
+              </div>
             </Show>
           </div>
         </div>
@@ -342,8 +384,8 @@ export default function Header() {
 
       {/* Sidebar */}
       <Sidebar 
-        isOpen={true} 
-        onToggle={() => {}} 
+        isOpen={showSidebar()} 
+        onToggle={() => setShowSidebar(!showSidebar())} 
       />
     </header>
   );
