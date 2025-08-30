@@ -1,4 +1,4 @@
-# MusicApp - Prueba Técnica Castor
+# MusicApp
 
 Aplicación web fullstack desarrollada con **Astro + Solid.js** que integra la API de Spotify para permitir a los usuarios explorar música, descubrir nuevos lanzamientos, buscar contenido y gestionar sus favoritos.
 
@@ -199,9 +199,6 @@ CREATE TABLE user_favorites (
 - `GET /api/debug/database` - Información de la base de datos
 - `GET /api/debug/env` - Variables de entorno
 
-## 📹 Video de Explicación
-- https://drive.google.com/file/d/1rBL8m7zwzZ7IW-k8sxsdpw8FYlp_2cIA/view?usp=sharing
-
 ## 🚀 Despliegue
 
 ### **Despliegue en Cloudflare Pages**
@@ -243,16 +240,6 @@ El proyecto está configurado para desplegarse automáticamente en Cloudflare Pa
 - **Índices optimizados**: Rendimiento mejorado
 - **Relaciones integridad**: Claves foráneas y constraints
 
-## 🤖 Uso de IA en el Desarrollo
-
-Este proyecto fue desarrollado utilizando **Cursor** como herramienta de desarrollo asistido por IA, aprovechando:
-
-- **Generación de código**: Componentes, API routes y utilidades
-- **Refactorización**: Optimización de código existente
-- **Debugging**: Resolución de errores y problemas
-- **Documentación**: Generación de comentarios y README
-- **Arquitectura**: Diseño de estructura del proyecto
-
 ## 📝 Notas de Desarrollo
 
 - La base de datos SQLite se crea automáticamente al ejecutar la aplicación
@@ -260,35 +247,6 @@ Este proyecto fue desarrollado utilizando **Cursor** como herramienta de desarro
 - La aplicación utiliza cookies HttpOnly para mayor seguridad
 - Todos los endpoints de API incluyen manejo de errores robusto
 - El proyecto está optimizado para Cloudflare Pages
-
-## 🎯 Criterios de Evaluación Cumplidos
-
-### ✅ **Precisión**
-- Respuestas acotadas y claras en la implementación
-- Código bien estructurado y comentado
-- Funcionalidades completas y funcionales
-
-### ✅ **Fundamentación**
-- Arquitectura sólida con separación de responsabilidades
-- Uso apropiado de TypeScript para type safety
-- Patrones de diseño consistentes
-
-### ✅ **Calidad**
-- Cumplimiento de todos los requisitos técnicos
-- Implementación de autenticación segura
-- Integración completa con Spotify API
-- Manejo robusto de errores
-
-### ✅ **Creatividad**
-- Stack tecnológico moderno (Astro + Solid.js)
-- Arquitectura híbrida eficiente
-- UI/UX intuitiva y atractiva
-- Funcionalidades adicionales como favoritos
-
-### ✅ **Oportunidad**
-- Desarrollo eficiente con herramientas de IA
-- Código optimizado y mantenible
-- Despliegue automatizado en Cloudflare Pages
 
 ---
 
